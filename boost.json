@@ -20,6 +20,8 @@
     "skills": [
         "livewire-development",
         "pest-testing",
+        "inertia-react-development",
+        "tailwindcss-development",
         "laravel-permission-development"
     ]
 }
