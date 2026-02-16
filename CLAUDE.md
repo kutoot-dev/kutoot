@@ -472,7 +472,7 @@ import { on, Events } from '#nativephp';
 on(Events.Camera.PhotoTaken, ({ path }) => { /* ... */ });
 ```
 
-Custom events can extend built-in events and be passed via `->event(CustomEvent::class)` (PHP) or `.event('App\Events\Custom')` (JS).
+Custom events can extend built-in events and be passed via `->event(CustomEvent::class)` (PHP) or `.event('App\\Events\\Custom')` (JS).
 
 ### EDGE Components (Native UI)
 
