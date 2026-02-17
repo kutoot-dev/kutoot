@@ -41,8 +41,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     protected $fillable = [
         'name',
         'email',
+        'mobile',
         'password',
         'primary_campaign_id',
+        'otp_code',
+        'otp_expires_at',
     ];
 
     /**
@@ -53,6 +56,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     protected $hidden = [
         'password',
         'remember_token',
+        'otp_code',
+        'otp_expires_at',
     ];
 
     /**
@@ -66,6 +71,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'primary_campaign_id' => 'integer',
+            'otp_expires_at' => 'datetime',
         ];
     }
 

@@ -30,6 +30,7 @@ class Campaign extends Model
         'stamp_target',
         'collected_commission_cache',
         'issued_stamps_cache',
+        'marketing_bounty_percentage',
         'winner_announcement_date',
         'is_active',
     ];
@@ -53,6 +54,7 @@ class Campaign extends Model
             'start_date' => 'date',
             'reward_cost_target' => 'decimal:2',
             'collected_commission_cache' => 'decimal:2',
+            'marketing_bounty_percentage' => 'integer',
             'winner_announcement_date' => 'datetime',
         ];
     }

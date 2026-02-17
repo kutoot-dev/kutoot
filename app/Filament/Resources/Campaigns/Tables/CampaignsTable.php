@@ -41,6 +41,10 @@ class CampaignsTable
                 TextColumn::make('issued_stamps_cache')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('marketing_bounty_percentage')
+                    ->label('Marketing %')
+                    ->suffix('%')
+                    ->sortable(),
                 TextColumn::make('winner_announcement_date')
                     ->dateTime()
                     ->sortable(),

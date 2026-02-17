@@ -28,6 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandLogo(asset('images/kutoot-name-logo.svg'))
+            ->brandLogoHeight('2.5rem')
             ->colors([
                 'primary' => Color::Amber,
             ])

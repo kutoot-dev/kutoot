@@ -53,6 +53,13 @@ class CampaignForm
                     ->required()
                     ->numeric()
                     ->default(0),
+                TextInput::make('marketing_bounty_percentage')
+                    ->label('Marketing Bounty %')
+                    ->helperText('Dummy percentage added to the bounty meter for marketing purposes (0-100).')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->maxValue(100),
                 DateTimePicker::make('winner_announcement_date'),
                 CheckboxList::make('plans')
                     ->relationship('plans', 'name')

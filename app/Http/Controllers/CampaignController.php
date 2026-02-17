@@ -23,7 +23,7 @@ class CampaignController extends Controller
             ->latest()
             ->paginate(9);
 
-        // Transform to include merchant info the frontend expects
+        // Transform to include merchant info and bounty percentage
         $campaigns->through(function (Campaign $campaign) {
             $merchant = $campaign->creator?->merchant;
             $data = $campaign->toArray();
@@ -33,6 +33,7 @@ class CampaignController extends Controller
                     'logo' => $merchant->logo,
                 ] : null,
             ]);
+            $data['bounty_percentage'] = $this->bountyService->effectiveBountyPercentage($campaign);
 
             return $data;
         });
@@ -47,7 +48,7 @@ class CampaignController extends Controller
         $campaign->load(['category', 'stamps', 'creator.merchantLocations.merchant']);
 
         $merchant = $campaign->creator?->merchant;
-        $bountyMeter = $this->bountyService->recalculateBountyMeter($campaign);
+        $bountyPercentage = $this->bountyService->effectiveBountyPercentage($campaign);
 
         return Inertia::render('Campaigns/Show', [
             'campaign' => array_merge($campaign->toArray(), [
@@ -58,7 +59,7 @@ class CampaignController extends Controller
                     ] : null,
                 ]),
             ]),
-            'bountyMeter' => $bountyMeter,
+            'bountyPercentage' => $bountyPercentage,
             'collectedCommission' => $campaign->collected_commission_cache,
             'issuedStamps' => $campaign->issued_stamps_cache,
         ]);

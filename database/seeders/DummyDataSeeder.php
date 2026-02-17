@@ -74,6 +74,7 @@ class DummyDataSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'John Banana',
             'email' => 'user@kutoot.com',
+            'mobile' => '9000000002',
             'password' => Hash::make('password'),
         ]);
         $user->assignRole('User');
@@ -130,6 +131,7 @@ class DummyDataSeeder extends Seeder
         $merchantUser = User::factory()->create([
             'name' => 'Manager Pizza',
             'email' => 'manager@pizzahut.com',
+            'mobile' => '9000000003',
             'password' => Hash::make('password'),
         ]);
         $merchantUser->assignRole('Merchant Admin');
@@ -145,14 +147,14 @@ class DummyDataSeeder extends Seeder
 
         // 6. Create one Campaign per Plan
         $campaignData = [
-            [$bronzePlan, 'Free Snack Box', $foodCat, 200.00, 5, $pizzaDowntown],
-            [$silverPlan, 'Free Medium Pizza', $foodCat, 400.00, 8, $pizzaDowntown],
-            [$goldPlan, 'Free Large Pizza', $foodCat, 500.00, 10, $pizzaDowntown],
-            [$platinumPlan, 'Free Banana Hamper', $retailCat, 800.00, 12, $bananaMall],
-            [$diamondPlan, 'Free Coffee Month Pass', $beverageCat, 1200.00, 15, $coffeeStation],
+            [$bronzePlan, 'Free Snack Box', $foodCat, 200.00, 5, $pizzaDowntown, 35],
+            [$silverPlan, 'Free Medium Pizza', $foodCat, 400.00, 8, $pizzaDowntown, 22],
+            [$goldPlan, 'Free Large Pizza', $foodCat, 500.00, 10, $pizzaDowntown, 15],
+            [$platinumPlan, 'Free Banana Hamper', $retailCat, 800.00, 12, $bananaMall, 40],
+            [$diamondPlan, 'Free Coffee Month Pass', $beverageCat, 1200.00, 15, $coffeeStation, 28],
         ];
 
-        foreach ($campaignData as [$plan, $rewardName, $category, $costTarget, $stampTarget, $location]) {
+        foreach ($campaignData as [$plan, $rewardName, $category, $costTarget, $stampTarget, $location, $marketingBounty]) {
             $campaign = Campaign::create([
                 'category_id' => $category->id,
                 'creator_type' => CreatorType::Admin,
@@ -165,6 +167,7 @@ class DummyDataSeeder extends Seeder
                 'stamp_target' => $stampTarget,
                 'collected_commission_cache' => 0,
                 'issued_stamps_cache' => 0,
+                'marketing_bounty_percentage' => $marketingBounty,
             ]);
             $campaign->plans()->attach($plan);
         }

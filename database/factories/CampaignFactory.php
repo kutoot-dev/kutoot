@@ -32,6 +32,7 @@ class CampaignFactory extends Factory
             'stamp_target' => 10,
             'collected_commission_cache' => 0,
             'issued_stamps_cache' => 0,
+            'marketing_bounty_percentage' => $this->faker->numberBetween(0, 40),
             'is_active' => true,
         ];
     }

@@ -73,3 +73,70 @@ test('it completes campaign when meter reaches 100%', function () {
     expect($campaign->status)->toBe(CampaignStatus::Completed);
     expect($campaign->collected_commission_cache)->toEqual(110.00);
 });
+
+test('effective bounty percentage includes marketing boost', function () {
+    $campaign = Campaign::factory()->create([
+        'reward_cost_target' => 100.00,
+        'stamp_target' => 10,
+        'collected_commission_cache' => 0,
+        'issued_stamps_cache' => 0,
+        'marketing_bounty_percentage' => 25,
+        'status' => CampaignStatus::Active,
+    ]);
+
+    $percentage = $this->service->effectiveBountyPercentage($campaign);
+
+    // Organic is 0%, marketing adds 25%
+    expect($percentage)->toBe(25);
+});
+
+test('effective bounty percentage combines organic and marketing', function () {
+    $campaign = Campaign::factory()->create([
+        'reward_cost_target' => 100.00,
+        'stamp_target' => 10,
+        'collected_commission_cache' => 50.00,
+        'issued_stamps_cache' => 5,
+        'marketing_bounty_percentage' => 20,
+        'status' => CampaignStatus::Active,
+    ]);
+
+    // Organic: (50/100 * 0.66) + (5/10 * 0.33) = 0.33 + 0.165 = 0.495 => ~50%
+    // Marketing: 20%
+    // Total: ~70%
+    $percentage = $this->service->effectiveBountyPercentage($campaign);
+
+    expect($percentage)->toBeGreaterThanOrEqual(69);
+    expect($percentage)->toBeLessThanOrEqual(70);
+});
+
+test('effective bounty percentage caps at 100', function () {
+    $campaign = Campaign::factory()->create([
+        'reward_cost_target' => 100.00,
+        'stamp_target' => 10,
+        'collected_commission_cache' => 100.00,
+        'issued_stamps_cache' => 10,
+        'marketing_bounty_percentage' => 50,
+        'status' => CampaignStatus::Active,
+    ]);
+
+    $percentage = $this->service->effectiveBountyPercentage($campaign);
+
+    expect($percentage)->toBe(100);
+});
+
+test('effective bounty percentage works with zero marketing', function () {
+    $campaign = Campaign::factory()->create([
+        'reward_cost_target' => 100.00,
+        'stamp_target' => 10,
+        'collected_commission_cache' => 50.00,
+        'issued_stamps_cache' => 5,
+        'marketing_bounty_percentage' => 0,
+        'status' => CampaignStatus::Active,
+    ]);
+
+    // Organic only: ~50%
+    $percentage = $this->service->effectiveBountyPercentage($campaign);
+
+    expect($percentage)->toBeGreaterThanOrEqual(49);
+    expect($percentage)->toBeLessThanOrEqual(50);
+});

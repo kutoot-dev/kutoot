@@ -123,7 +123,7 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                 email: auth.user.email,
             },
             theme: {
-                color: "#4f46e5",
+                color: "#f08c10",
             },
         };
 
@@ -161,59 +161,65 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">My Coupons ({planName})</h2>}
+            header={<h2 className="text-xl font-bold leading-tight text-white flex items-center gap-2">🎫 My Coupons ({planName})</h2>}
         >
             <Head title="Coupons" />
 
-            <div className="py-12 bg-gray-50 min-h-screen">
+            <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {coupons.data.length > 0 ? (
                             coupons.data.map((coupon) => (
-                                <div key={coupon.id} className="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 flex flex-col">
+                                <div key={coupon.id} className="coupon-card overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <div className="p-6 flex-grow">
-                                        <span className="inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full mb-2">
-                                            {coupon.merchant_location ? coupon.merchant_location.branch_name : 'Global Coupon'}
+                                        <span className="inline-block px-3 py-1 text-xs font-bold text-lucky-700 bg-lucky-100 rounded-full mb-3 border border-lucky-200">
+                                            {coupon.merchant_location ? coupon.merchant_location.branch_name : '🌐 Global Coupon'}
                                         </span>
-                                        <h3 className="text-lg font-bold text-gray-900 mb-1">{coupon.title}</h3>
-                                        <p className="text-gray-600 text-sm mb-4">{coupon.description}</p>
+                                        <h3 className="font-display text-lg text-gray-900 mb-1">{coupon.title}</h3>
+                                        <p className="text-gray-500 text-sm mb-4">{coupon.description}</p>
 
-                                        <div className="bg-gray-50 p-3 rounded text-sm text-gray-700">
-                                            <div className="flex justify-between mb-1">
-                                                <span>Code:</span>
-                                                <span className="font-mono font-bold">{coupon.code}</span>
+                                        <div className="bg-gradient-to-br from-lucky-50 to-ticket-50 p-4 rounded-xl text-sm text-gray-700 border border-dashed border-lucky-200">
+                                            <div className="flex justify-between mb-2 pb-2 border-b border-dashed border-lucky-100">
+                                                <span className="text-gray-500">Code:</span>
+                                                <span className="font-mono font-bold text-lucky-700 bg-lucky-100 px-2 py-0.5 rounded">{coupon.code}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>Value:</span>
-                                                <span className="font-bold text-indigo-600">
+                                                <span className="text-gray-500">Value:</span>
+                                                <span className="font-bold text-ticket-600">
                                                     {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% Off` : <><CurrencySymbol />{coupon.discount_value} Off</>}
                                                 </span>
-
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                                    {/* Ticket perforation */}
+                                    <div className="flex justify-center gap-2 py-1.5 bg-gradient-to-r from-transparent via-lucky-50 to-transparent">
+                                        {[...Array(10)].map((_, i) => (
+                                            <div key={i} className="w-2 h-2 rounded-full bg-lucky-200" />
+                                        ))}
+                                    </div>
+                                    <div className="bg-gradient-to-br from-lucky-50 to-ticket-50 px-6 py-4">
                                         {auth.user ? (
                                             <PrimaryButton
                                                 className="w-full justify-center"
                                                 onClick={() => confirmRedemption(coupon)}
                                             >
-                                                Redeem Now
+                                                🎟️ Redeem Now
                                             </PrimaryButton>
                                         ) : (
                                             <Link
                                                 href={route('login')}
-                                                className="inline-flex items-center w-full justify-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                                                className="inline-flex items-center w-full justify-center gap-2 px-5 py-2.5 lucky-gradient border border-transparent rounded-full font-bold text-xs text-white uppercase tracking-widest hover:shadow-lg transition-all"
                                             >
-                                                Login to Redeem
+                                                🔑 Login to Redeem
                                             </Link>
                                         )}
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-full text-center py-10">
-                                <h3 className="text-lg font-medium text-gray-900">No coupons available</h3>
+                            <div className="col-span-full text-center py-16">
+                                <span className="text-5xl mb-4 block">🎭</span>
+                                <h3 className="font-display text-lg text-gray-900">No coupons available</h3>
                                 <p className="mt-1 text-sm text-gray-500">Upgrade your plan to unlock more rewards.</p>
                             </div>
                         )}
@@ -223,10 +229,10 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
             <Modal show={confirmingRedemption} onClose={closeModal}>
                 <form onSubmit={initiatePayment} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        Redeem: {selectedCoupon?.title}
+                    <h2 className="font-display text-lg text-gray-900 flex items-center gap-2">
+                        <span>🎟️</span> Redeem: {selectedCoupon?.title}
                         {selectedLocationName && (
-                            <span className="block text-sm font-normal text-indigo-600 mt-1">
+                            <span className="block text-sm font-normal text-lucky-600 mt-1">
                                 at {selectedLocationName}
                             </span>
                         )}
@@ -244,7 +250,7 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                             name="merchant_location_id"
                             value={data.merchant_location_id}
                             onChange={(e) => setData('merchant_location_id', e.target.value)}
-                            className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                            className="mt-1 block w-full border-lucky-200 focus:border-lucky-500 focus:ring-lucky-500 rounded-lg shadow-sm"
                             required
                         >
                             <option value="">Select a location</option>
@@ -276,29 +282,29 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                         <InputError message={errors.amount} className="mt-2" />
                     </div>
 
-                    <div className="mt-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                        <div className="flex justify-between text-sm text-indigo-900 mb-1">
+                    <div className="mt-6 bg-gradient-to-br from-lucky-50 to-ticket-50 p-4 rounded-xl border-2 border-dashed border-lucky-200">
+                        <div className="flex justify-between text-sm text-gray-700 mb-1">
                             <span>Total Bill:</span>
-                            <span><CurrencySymbol />{breakdown.billAmount.toFixed(2)}</span>
+                            <span className="font-bold"><CurrencySymbol />{breakdown.billAmount.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-indigo-900 mb-1">
+                        <div className="flex justify-between text-sm text-gray-700 mb-1">
                             <span>Discount Applied:</span>
-                            <span className="text-green-600">- <CurrencySymbol />{breakdown.discount.toFixed(2)}</span>
+                            <span className="font-bold text-green-600">- <CurrencySymbol />{breakdown.discount.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-sm font-semibold text-indigo-900 mb-1 pt-1 border-t border-indigo-100">
+                        <div className="flex justify-between text-sm font-bold text-lucky-700 mb-1 pt-1 border-t border-dashed border-lucky-200">
                             <span>Bill after Discount:</span>
                             <span><CurrencySymbol />{breakdown.finalBill.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-indigo-900 mb-1">
+                        <div className="flex justify-between text-sm text-gray-700 mb-1">
                             <span>Platform Fee:</span>
                             <span><CurrencySymbol />{breakdown.feeAmount.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-indigo-900 mb-2">
+                        <div className="flex justify-between text-sm text-gray-700 mb-2">
                             <span>GST ({gst_rate}%):</span>
                             <span><CurrencySymbol />{breakdown.gst.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between font-bold text-indigo-900 pt-2 border-t border-indigo-200">
-                            <span>Total to Pay:</span>
+                        <div className="flex justify-between font-bold text-lucky-800 pt-2 border-t-2 border-dashed border-lucky-300">
+                            <span>💰 Total to Pay:</span>
                             <span><CurrencySymbol />{breakdown.total.toFixed(2)}</span>
                         </div>
                     </div>
@@ -336,7 +342,7 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                                 name="campaign_id"
                                 value={data.campaign_id}
                                 onChange={(e) => setData('campaign_id', e.target.value)}
-                                className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                className="mt-1 block w-full border-lucky-200 focus:border-lucky-500 focus:ring-lucky-500 rounded-lg shadow-sm"
                                 required
                             >
                                 <option value="">Choose a campaign</option>
