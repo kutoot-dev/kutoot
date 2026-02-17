@@ -44,6 +44,11 @@ class CouponController extends Controller
             ? $plan->campaigns()->where('status', 'active')->get(['campaigns.id', 'reward_name'])
             : collect();
 
+        // Calculate remaining redeemable amount for the user's plan
+        $totalDiscountRedeemed = $user ? (float) $user->couponRedemptions()->sum('discount_applied') : 0;
+        $maxRedeemableAmount = $plan ? (float) $plan->max_redeemable_amount : 0;
+        $remainingRedeemAmount = max(0, $maxRedeemableAmount - $totalDiscountRedeemed);
+
         return Inertia::render('Coupons/Index', [
             'coupons' => $coupons,
             'locations' => $locations,
@@ -56,6 +61,8 @@ class CouponController extends Controller
             'availableCampaigns' => $availableCampaigns,
             'isLoggedIn' => (bool) $user,
             'appDebug' => config('app.debug'),
+            'maxRedeemableAmount' => $maxRedeemableAmount,
+            'remainingRedeemAmount' => $remainingRedeemAmount,
         ]);
     }
 
@@ -113,6 +120,8 @@ class CouponController extends Controller
                     'user_id' => $user->id,
                     'coupon_id' => $coupon->id,
                     'merchant_location_id' => $merchantLocation->id,
+                    'original_bill_amount' => $amount,
+                    'discount_amount' => $discountAmount,
                     'amount' => $finalBillAfterDiscount,
                     'platform_fee' => $platformFee,
                     'gst_amount' => $gstAmount,
@@ -122,6 +131,14 @@ class CouponController extends Controller
                     'commission_amount' => $commissionAmount,
                 ]);
 
+                $financials = [
+                    'original_bill_amount' => $amount,
+                    'discount_amount' => $discountAmount,
+                    'platform_fee' => $platformFee,
+                    'gst_amount' => $gstAmount,
+                    'total_paid' => $grandTotal,
+                ];
+
                 // 5. Debug mode: skip payment gateway and auto-complete
                 if (config('app.debug')) {
                     $transaction->update(['payment_status' => 'paid', 'payment_id' => 'debug_'.uniqid()]);
@@ -130,7 +147,7 @@ class CouponController extends Controller
                     if ($transaction->coupon_id) {
                         $coupon_model = DiscountCoupon::find($transaction->coupon_id);
                         if ($coupon_model) {
-                            $this->redemptionService->redeemCoupon($user, $coupon_model, $transaction);
+                            $this->redemptionService->redeemCoupon($user, $coupon_model, $transaction, $financials);
                         }
                     }
 
@@ -145,10 +162,7 @@ class CouponController extends Controller
                         }
                     }
 
-                    return response()->json([
-                        'debug' => true,
-                        'message' => 'Debug mode: Coupon redeemed without payment.',
-                    ]);
+                    return redirect()->route('coupons.index')->with('success', 'Debug mode: Coupon redeemed without payment.');
                 }
 
                 // 6. Initiate payment order
@@ -179,7 +193,13 @@ class CouponController extends Controller
                 if ($transaction->coupon_id) {
                     $coupon = DiscountCoupon::find($transaction->coupon_id);
                     if ($coupon) {
-                        $this->redemptionService->redeemCoupon($user, $coupon, $transaction);
+                        $this->redemptionService->redeemCoupon($user, $coupon, $transaction, [
+                            'original_bill_amount' => (float) $transaction->original_bill_amount,
+                            'discount_amount' => (float) $transaction->discount_amount,
+                            'platform_fee' => (float) $transaction->platform_fee,
+                            'gst_amount' => (float) $transaction->gst_amount,
+                            'total_paid' => (float) $transaction->total_amount,
+                        ]);
                     }
                 }
 

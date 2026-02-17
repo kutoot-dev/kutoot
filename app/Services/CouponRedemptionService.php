@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\DiscountType;
 use App\Events\CouponRedeemed;
 use App\Models\CouponRedemption;
 use App\Models\DiscountCoupon;
@@ -12,29 +11,26 @@ use Illuminate\Validation\ValidationException;
 
 class CouponRedemptionService
 {
-    public function redeemCoupon(User $user, DiscountCoupon $coupon, Transaction $transaction): CouponRedemption
+    /**
+     * @param  array{original_bill_amount: float, discount_amount: float, platform_fee: float, gst_amount: float, total_paid: float}  $financials
+     */
+    public function redeemCoupon(User $user, DiscountCoupon $coupon, Transaction $transaction, array $financials): CouponRedemption
     {
         // 1. Check if active
         if (! $coupon->is_active) {
             throw ValidationException::withMessages(['coupon' => 'This coupon is no longer active.']);
         }
 
-        // 2. Validate user owns/can use (optional logic here)
-
-        // 3. Calculate discount amount
-        $discountAmount = 0.0;
-        if ($coupon->discount_type === DiscountType::Fixed) {
-            $discountAmount = $coupon->discount_value;
-        } else {
-            $discountAmount = ($transaction->amount * $coupon->discount_value) / 100;
-        }
-
-        // 4. Create redemption record
+        // 2. Create redemption record with all financial details
         $redemption = CouponRedemption::create([
             'user_id' => $user->id,
             'coupon_id' => $coupon->id,
             'transaction_id' => $transaction->id,
-            'discount_applied' => $discountAmount,
+            'discount_applied' => $financials['discount_amount'],
+            'original_bill_amount' => $financials['original_bill_amount'],
+            'platform_fee' => $financials['platform_fee'],
+            'gst_amount' => $financials['gst_amount'],
+            'total_paid' => $financials['total_paid'],
         ]);
 
         CouponRedeemed::dispatch($redemption);

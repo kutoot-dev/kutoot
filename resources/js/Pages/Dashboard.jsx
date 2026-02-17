@@ -184,8 +184,11 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                                         <thead>
                                             <tr className="border-b-2 border-dashed border-ticket-200 text-left text-ticket-600">
                                                 <th className="pb-2 font-bold">Coupon</th>
-                                                <th className="pb-2 font-bold text-right">Discount</th>
                                                 <th className="pb-2 font-bold text-right">Bill</th>
+                                                <th className="pb-2 font-bold text-right">Discount</th>
+                                                <th className="pb-2 font-bold text-right">Fee</th>
+                                                <th className="pb-2 font-bold text-right">GST</th>
+                                                <th className="pb-2 font-bold text-right">Paid</th>
                                                 <th className="pb-2 font-bold text-right">When</th>
                                             </tr>
                                         </thead>
@@ -193,8 +196,11 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                                             {recentRedemptions.map(r => (
                                                 <tr key={r.id} className="hover:bg-ticket-50/50 transition-colors">
                                                     <td className="py-2.5 text-gray-900 font-medium">{r.coupon_title ?? '—'}</td>
-                                                    <td className="py-2.5 text-right font-bold text-green-600"><CurrencySymbol />{r.discount_applied.toFixed(2)}</td>
-                                                    <td className="py-2.5 text-right text-gray-600">{r.bill_amount ? <><CurrencySymbol />{r.bill_amount.toFixed(2)}</> : '—'}</td>
+                                                    <td className="py-2.5 text-right text-gray-600"><CurrencySymbol />{r.original_bill_amount.toFixed(2)}</td>
+                                                    <td className="py-2.5 text-right font-bold text-green-600">-<CurrencySymbol />{r.discount_applied.toFixed(2)}</td>
+                                                    <td className="py-2.5 text-right text-gray-500"><CurrencySymbol />{r.platform_fee.toFixed(2)}</td>
+                                                    <td className="py-2.5 text-right text-gray-500"><CurrencySymbol />{r.gst_amount.toFixed(2)}</td>
+                                                    <td className="py-2.5 text-right font-bold text-lucky-700"><CurrencySymbol />{r.total_paid.toFixed(2)}</td>
                                                     <td className="py-2.5 text-right text-gray-400 text-xs">{r.created_at}</td>
                                                 </tr>
                                             ))}

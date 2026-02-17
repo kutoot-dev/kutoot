@@ -14,6 +14,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('transaction_id')->unique()->constrained()->cascadeOnDelete();
             $table->decimal('discount_applied', 15, 2);
+            $table->decimal('original_bill_amount', 15, 2)->default(0);
+            $table->decimal('platform_fee', 15, 2)->default(0);
+            $table->decimal('gst_amount', 15, 2)->default(0);
+            $table->decimal('total_paid', 15, 2)->default(0);
             $table->timestamps();
         });
     }

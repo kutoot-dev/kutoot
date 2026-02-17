@@ -20,6 +20,8 @@ class Transaction extends Model
         'coupon_id',
         'merchant_location_id',
         'amount',
+        'original_bill_amount',
+        'discount_amount',
         'platform_fee',
         'gst_amount',
         'total_amount',
@@ -44,6 +46,8 @@ class Transaction extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'original_bill_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'platform_fee' => 'decimal:2',
             'gst_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',

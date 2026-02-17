@@ -18,6 +18,10 @@ class CouponRedemption extends Model
         'coupon_id',
         'transaction_id',
         'discount_applied',
+        'original_bill_amount',
+        'platform_fee',
+        'gst_amount',
+        'total_paid',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -35,6 +39,10 @@ class CouponRedemption extends Model
     {
         return [
             'discount_applied' => 'decimal:2',
+            'original_bill_amount' => 'decimal:2',
+            'platform_fee' => 'decimal:2',
+            'gst_amount' => 'decimal:2',
+            'total_paid' => 'decimal:2',
         ];
     }
 

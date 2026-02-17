@@ -30,7 +30,7 @@ class DashboardController extends Controller
             : 0;
 
         $recentTransactions = $user->transactions()
-            ->with(['coupon:id,title', 'merchantLocation:id,name'])
+            ->with(['coupon:id,title', 'merchantLocation:id,branch_name'])
             ->latest()
             ->limit(10)
             ->get()
@@ -40,12 +40,12 @@ class DashboardController extends Controller
                 'total_amount' => (float) $t->total_amount,
                 'payment_status' => $t->payment_status,
                 'coupon_title' => $t->coupon?->title,
-                'location_name' => $t->merchantLocation?->name,
+                'location_name' => $t->merchantLocation?->branch_name,
                 'created_at' => $t->created_at->diffForHumans(),
             ]);
 
         $recentRedemptions = $user->couponRedemptions()
-            ->with(['coupon:id,title', 'transaction:id,amount'])
+            ->with(['coupon:id,title'])
             ->latest()
             ->limit(10)
             ->get()
@@ -53,7 +53,10 @@ class DashboardController extends Controller
                 'id' => $r->id,
                 'coupon_title' => $r->coupon?->title,
                 'discount_applied' => (float) $r->discount_applied,
-                'bill_amount' => $r->transaction ? (float) $r->transaction->amount : null,
+                'original_bill_amount' => (float) $r->original_bill_amount,
+                'platform_fee' => (float) $r->platform_fee,
+                'gst_amount' => (float) $r->gst_amount,
+                'total_paid' => (float) $r->total_paid,
                 'created_at' => $r->created_at->diffForHumans(),
             ]);
 
@@ -89,7 +92,7 @@ class DashboardController extends Controller
                     ? (int) max(0, now()->diffInDays($subscription->expires_at, false))
                     : null,
             ] : null,
-            'primaryCampaign' => $user->primaryCampaign?->name,
+            'primaryCampaign' => $user->primaryCampaign?->reward_name,
             'stats' => [
                 'stamps_count' => $stampsCount,
                 'total_coupons_used' => $totalCouponsUsed,

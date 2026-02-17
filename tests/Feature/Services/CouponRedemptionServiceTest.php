@@ -34,15 +34,29 @@ test('it redeems a valid coupon and fires event', function () {
     $transaction = Transaction::factory()->create([
         'user_id' => $user->id,
         'merchant_location_id' => $location->id,
-        'amount' => 100.00,
+        'original_bill_amount' => 100.00,
+        'discount_amount' => 10.00,
+        'amount' => 90.00,
     ]);
 
-    $redemption = $this->service->redeemCoupon($user, $coupon, $transaction);
+    $financials = [
+        'original_bill_amount' => 100.00,
+        'discount_amount' => 10.00,
+        'platform_fee' => 10.00,
+        'gst_amount' => 1.80,
+        'total_paid' => 101.80,
+    ];
+
+    $redemption = $this->service->redeemCoupon($user, $coupon, $transaction, $financials);
 
     expect($redemption)->not->toBeNull();
     expect($redemption->user_id)->toBe($user->id);
     expect($redemption->coupon_id)->toBe($coupon->id);
     expect($redemption->discount_applied)->toEqual(10.00);
+    expect((float) $redemption->original_bill_amount)->toEqual(100.00);
+    expect((float) $redemption->platform_fee)->toEqual(10.00);
+    expect((float) $redemption->gst_amount)->toEqual(1.80);
+    expect((float) $redemption->total_paid)->toEqual(101.80);
 
     Event::assertDispatched(CouponRedeemed::class);
 });
@@ -52,10 +66,18 @@ test('it throws validation exception for inactive coupon', function () {
     $user = User::factory()->create();
     $transaction = Transaction::factory()->create();
 
+    $financials = [
+        'original_bill_amount' => 100.00,
+        'discount_amount' => 0.00,
+        'platform_fee' => 10.00,
+        'gst_amount' => 1.80,
+        'total_paid' => 111.80,
+    ];
+
     $this->expectException(ValidationException::class);
     $this->expectExceptionMessage('This coupon is no longer active.');
 
-    $this->service->redeemCoupon($user, $coupon, $transaction);
+    $this->service->redeemCoupon($user, $coupon, $transaction, $financials);
 });
 
 test('it calculates percentage discount correctly', function () {
@@ -65,9 +87,21 @@ test('it calculates percentage discount correctly', function () {
         'discount_value' => 20, // 20%
     ]);
     $user = User::factory()->create();
-    $transaction = Transaction::factory()->create(['amount' => 100.00]);
+    $transaction = Transaction::factory()->create([
+        'original_bill_amount' => 100.00,
+        'discount_amount' => 20.00,
+        'amount' => 80.00,
+    ]);
 
-    $redemption = $this->service->redeemCoupon($user, $coupon, $transaction);
+    $financials = [
+        'original_bill_amount' => 100.00,
+        'discount_amount' => 20.00,
+        'platform_fee' => 10.00,
+        'gst_amount' => 1.80,
+        'total_paid' => 91.80,
+    ];
+
+    $redemption = $this->service->redeemCoupon($user, $coupon, $transaction, $financials);
 
     expect($redemption->discount_applied)->toEqual(20.00);
 });

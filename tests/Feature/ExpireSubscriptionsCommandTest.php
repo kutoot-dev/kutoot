@@ -70,11 +70,20 @@ test('does not expire subscriptions without an expiry date', function () {
 });
 
 test('assigns base plan to newly registered user', function () {
-    $response = $this->post('/register', [
+    // Send OTP for registration
+    $this->post('/register/send-otp', [
         'name' => 'Test User',
         'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'mobile' => '9876543210',
+    ]);
+
+    // Get the debug OTP from the session
+    $otpData = session('otp.9876543210');
+    expect($otpData)->not->toBeNull();
+
+    // Verify OTP and register
+    $this->post('/register/verify', [
+        'otp' => $otpData['code'],
     ]);
 
     $user = User::where('email', 'test@example.com')->first();

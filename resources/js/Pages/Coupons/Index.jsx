@@ -10,7 +10,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import CurrencySymbol from '@/Components/CurrencySymbol';
 
 
-export default function Index({ auth, coupons, locations, planName, stampsPerHundred, primaryCampaign, availableCampaigns }) {
+export default function Index({ auth, coupons, locations, planName, stampsPerHundred, primaryCampaign, availableCampaigns, remainingRedeemAmount, maxRedeemableAmount }) {
     const { platform_fee, gst_rate, platform_fee_type, appDebug } = usePage().props;
 
     const [confirmingRedemption, setConfirmingRedemption] = useState(false);
@@ -80,11 +80,21 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
         if (!couponId) return;
 
+        // Debug mode: use standard Inertia form post (returns redirect)
+        if (appDebug) {
+            router.post(route('coupons.redeem', couponId), formData, {
+                onSuccess: () => closeModal(),
+                onError: (errs) => console.error('Redeem errors:', errs),
+            });
+            return;
+        }
+
         try {
             const response = await fetch(route('coupons.redeem', couponId), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
                 body: JSON.stringify(formData),
@@ -94,14 +104,6 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
             if (response.ok) {
                 closeModal();
-                if (result.debug) {
-                    // Debug mode: no payment needed, just reload
-                    router.visit(route('coupons.index'), {
-                        preserveScroll: true,
-                        only: ['coupons'],
-                    });
-                    return;
-                }
                 handleRazorpayPayment(result.order, result.transaction_id);
             } else {
                 alert(result.error || 'Something went wrong');
@@ -198,8 +200,35 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                                                     {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% Off` : <><CurrencySymbol />{coupon.discount_value} Off</>}
                                                 </span>
                                             </div>
+                                            {coupon.max_discount_amount && (
+                                                <div className="flex justify-between mt-2 pt-2 border-t border-dashed border-lucky-100">
+                                                    <span className="text-gray-500">Max Savings:</span>
+                                                    <span className="font-bold text-green-600">
+                                                        <CurrencySymbol />{parseFloat(coupon.max_discount_amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {!coupon.max_discount_amount && coupon.discount_type === 'fixed' && (
+                                                <div className="flex justify-between mt-2 pt-2 border-t border-dashed border-lucky-100">
+                                                    <span className="text-gray-500">Max Savings:</span>
+                                                    <span className="font-bold text-green-600">
+                                                        <CurrencySymbol />{parseFloat(coupon.discount_value).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
+                                    {/* Remaining balance info */}
+                                    {auth.user && remainingRedeemAmount !== undefined && (
+                                        <div className="px-6 pb-2">
+                                            <div className="text-xs text-gray-500 flex justify-between items-center">
+                                                <span>Remaining Balance:</span>
+                                                <span className={`font-bold ${remainingRedeemAmount > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                    <CurrencySymbol />{parseFloat(remainingRedeemAmount).toFixed(2)} / <CurrencySymbol />{parseFloat(maxRedeemableAmount).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                     {/* Ticket perforation */}
                                     <div className="flex justify-center gap-2 py-1.5 bg-gradient-to-r from-transparent via-lucky-50 to-transparent">
                                         {[...Array(10)].map((_, i) => (
