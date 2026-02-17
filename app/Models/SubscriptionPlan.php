@@ -29,6 +29,7 @@ class SubscriptionPlan extends Model
     {
         return [
             'max_redeemable_amount' => 'decimal:2',
+            'is_default' => 'boolean',
         ];
     }
 

@@ -18,9 +18,16 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreTransactionRequest $request, \App\Services\StampService $stampService)
     {
-        //
+        $transaction = \App\Models\Transaction::create($request->validated());
+
+        $stampService->awardStamps($transaction, $request->input('campaign_id'));
+
+        return response()->json([
+            'message' => 'Transaction recorded and stamps awarded.',
+            'transaction' => $transaction->load('stamps'),
+        ], 201);
     }
 
     /**

@@ -42,6 +42,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
+        'primary_campaign_id',
     ];
 
     /**
@@ -64,7 +65,16 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'primary_campaign_id' => 'integer',
         ];
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Campaign, $this>
+     */
+    public function primaryCampaign(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Campaign::class, 'primary_campaign_id');
     }
 
     /**
@@ -81,6 +91,31 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function activeSubscription(): HasOne
     {
         return $this->hasOne(UserSubscription::class)->where('status', SubscriptionStatus::Active)->latestOfMany();
+    }
+
+    /**
+     * Get the effective subscription, falling back to the Base Plan if no active subscription exists.
+     */
+    public function effectiveSubscription(): ?UserSubscription
+    {
+        $active = $this->activeSubscription;
+
+        if ($active) {
+            return $active;
+        }
+
+        // Fallback to Base Plan (is_default)
+        $basePlan = SubscriptionPlan::where('is_default', true)->first();
+
+        if ($basePlan) {
+            return new UserSubscription([
+                'user_id' => $this->id,
+                'plan_id' => $basePlan->id,
+                'status' => SubscriptionStatus::Active,
+            ]);
+        }
+
+        return null;
     }
 
     /**

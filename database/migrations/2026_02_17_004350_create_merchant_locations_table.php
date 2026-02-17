@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('merchant_id')->constrained()->cascadeOnDelete();
             $table->string('branch_name');
             $table->decimal('commission_percentage', 5, 2);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

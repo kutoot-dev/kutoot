@@ -55,12 +55,14 @@ class DummyDataSeeder extends Seeder
         // 3. Create Merchants
         $pizzaHut = Merchant::create([
             'name' => 'Pizza Hut',
+            'slug' => 'pizza-hut',
             'logo' => 'https://placehold.co/400x400/e74c3c/ffffff?text=Pizza+Hut',
             'is_active' => true,
         ]);
 
         $bananaStore = Merchant::create([
             'name' => 'Nano Banana Store',
+            'slug' => 'nano-banana-store',
             'logo' => 'https://placehold.co/400x400/f1c40f/000000?text=Nano+Banana',
             'is_active' => true,
         ]);
@@ -88,10 +90,10 @@ class DummyDataSeeder extends Seeder
         $merchantUser->merchantLocations()->attach($pizzaDowntown);
 
         // 5. Create Categories
-        $foodCat = CampaignCategory::create(['name' => 'Food & Dining']);
-        $retailCat = CampaignCategory::create(['name' => 'Retail']);
+        $foodCat = CampaignCategory::create(['name' => 'Food & Dining', 'slug' => 'food-dining']);
+        $retailCat = CampaignCategory::create(['name' => 'Retail', 'slug' => 'retail']);
 
-        $couponCatFood = CouponCategory::create(['name' => 'Food', 'is_active' => true]);
+        $couponCatFood = CouponCategory::create(['name' => 'Food', 'slug' => 'food', 'is_active' => true]);
 
         // 6. Create Campaigns
         $campaign = Campaign::create([

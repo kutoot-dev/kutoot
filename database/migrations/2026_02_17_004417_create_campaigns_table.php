@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('collected_commission_cache', 15, 2)->default(0);
             $table->bigInteger('issued_stamps_cache')->default(0);
             $table->dateTime('winner_announcement_date')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

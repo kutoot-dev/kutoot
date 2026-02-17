@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 export default function Show({ auth, campaign, bountyMeter, collectedCommission, issuedStamps }) {
     const progressPercentage = Math.min(Math.round(bountyMeter * 100), 100);
@@ -71,16 +71,36 @@ export default function Show({ auth, campaign, bountyMeter, collectedCommission,
                                     </div>
                                 </div>
 
-                                <div className="mt-6">
+                                <div className="mt-6 flex space-x-4">
                                     <button
                                         disabled={progressPercentage < 100}
                                         className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${progressPercentage >= 100
-                                                ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                                                : 'bg-gray-300 cursor-not-allowed'
+                                            ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                                            : 'bg-gray-300 cursor-not-allowed'
                                             }`}
                                     >
                                         {progressPercentage >= 100 ? 'Claim Reward' : 'In Progress'}
                                     </button>
+
+                                    {auth.user.primary_campaign_id !== campaign.id ? (
+                                        <button
+                                            onClick={() => {
+                                                if (confirm('Set this as your primary campaign for future stamps?')) {
+                                                    // This would ideally be an Inertia post/patch
+                                                    router.patch(route('profile.update-primary-campaign'), {
+                                                        primary_campaign_id: campaign.id
+                                                    });
+                                                }
+                                            }}
+                                            className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        >
+                                            Set as Primary
+                                        </button>
+                                    ) : (
+                                        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                            Primary Campaign
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>

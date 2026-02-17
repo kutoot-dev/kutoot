@@ -60,4 +60,20 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Update the user's primary campaign.
+     */
+    public function updatePrimaryCampaign(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'primary_campaign_id' => ['required', 'exists:campaigns,id'],
+        ]);
+
+        $request->user()->update([
+            'primary_campaign_id' => $request->primary_campaign_id,
+        ]);
+
+        return Redirect::back()->with('status', 'Primary campaign updated successfully.');
+    }
 }
