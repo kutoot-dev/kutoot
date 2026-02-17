@@ -83,7 +83,11 @@ class DashboardController extends Controller
                 'max_discounted_bills' => $plan->max_discounted_bills,
                 'max_redeemable_amount' => (float) $plan->max_redeemable_amount,
                 'duration_days' => $plan->duration_days,
-                'expires_at' => $subscription->expires_at?->toDateString(),
+                'purchased_at' => $subscription->created_at?->format('M d, Y'),
+                'expires_at' => $subscription->expires_at?->format('M d, Y'),
+                'days_remaining' => $subscription->expires_at
+                    ? (int) max(0, now()->diffInDays($subscription->expires_at, false))
+                    : null,
             ] : null,
             'primaryCampaign' => $user->primaryCampaign?->name,
             'stats' => [

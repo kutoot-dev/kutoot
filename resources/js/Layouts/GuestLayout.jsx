@@ -14,6 +14,30 @@ export default function GuestLayout({ children }) {
                 </Link>
             </div>
 
+            {/* Navigation links */}
+            <div className="relative z-10 mt-4 flex items-center gap-4 text-sm">
+                <Link
+                    href={route('campaigns.index')}
+                    className="text-lucky-700 hover:text-lucky-900 font-medium transition-colors"
+                >
+                    Home
+                </Link>
+                <span className="text-lucky-300">|</span>
+                <Link
+                    href={route('login')}
+                    className="text-lucky-700 hover:text-lucky-900 font-medium transition-colors"
+                >
+                    Login
+                </Link>
+                <span className="text-lucky-300">|</span>
+                <Link
+                    href={route('register')}
+                    className="text-lucky-700 hover:text-lucky-900 font-medium transition-colors"
+                >
+                    Register
+                </Link>
+            </div>
+
             <div className="relative z-10 mt-6 w-full overflow-hidden bg-lucky-50/95 backdrop-blur-sm px-8 py-6 shadow-xl border-2 border-dashed border-lucky-200 sm:max-w-md sm:rounded-2xl">
                 {/* Ticket notches */}
                 <div className="absolute -left-3 top-1/2 w-6 h-6 bg-gradient-to-br from-lucky-50 to-ticket-50 rounded-full" />

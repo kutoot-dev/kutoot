@@ -21,6 +21,7 @@ class OtpLoginController extends Controller
     {
         return Inertia::render('Auth/OtpLogin', [
             'status' => session('status'),
+            'debugOtp' => session('debugOtp'),
         ]);
     }
 
@@ -45,7 +46,13 @@ class OtpLoginController extends Controller
         $otp = $this->otpService->generateOtp($user);
         $this->otpService->sendOtp($user, $otp, $isEmail ? 'email' : 'mobile');
 
-        return back()->with('status', 'OTP sent successfully! Check your '.($isEmail ? 'email' : 'phone').'.');
+        $flash = ['status' => 'OTP sent successfully! Check your '.($isEmail ? 'email' : 'phone').'.'];
+
+        if (config('app.debug')) {
+            $flash['debugOtp'] = $otp;
+        }
+
+        return back()->with($flash);
     }
 
     public function verifyOtp(OtpVerifyRequest $request): RedirectResponse

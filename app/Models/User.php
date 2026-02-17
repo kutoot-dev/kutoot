@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\SubscriptionStatus;
+use Filament\Auth\MultiFactor\Email\Concerns\InteractsWithEmailAuthentication;
+use Filament\Auth\MultiFactor\Email\Contracts\HasEmailAuthentication;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -20,10 +22,10 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasTenants
+class User extends Authenticatable implements FilamentUser, HasEmailAuthentication, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, InteractsWithEmailAuthentication, LogsActivity, Notifiable;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -46,6 +48,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'primary_campaign_id',
         'otp_code',
         'otp_expires_at',
+        'has_email_authentication',
     ];
 
     /**
@@ -72,6 +75,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             'password' => 'hashed',
             'primary_campaign_id' => 'integer',
             'otp_expires_at' => 'datetime',
+            'has_email_authentication' => 'boolean',
         ];
     }
 

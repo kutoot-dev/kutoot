@@ -65,29 +65,55 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                                             {plan.name}
                                             {plan.is_default && <span className="ml-2 text-xs font-normal text-gray-400 font-sans">(Base)</span>}
                                         </p>
-                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div className="grid grid-cols-3 gap-3 text-sm">
                                             <div className="bg-gradient-to-br from-lucky-50 to-lucky-100 rounded-xl p-3 text-center border border-lucky-200">
                                                 <p className="text-2xl font-bold text-lucky-600">{plan.stamps_on_purchase}</p>
-                                                <p className="text-xs text-lucky-700 font-medium">🎫 Stamps / Buy</p>
+                                                <p className="text-xs text-lucky-700 font-medium">Bonus Stamps</p>
                                             </div>
                                             <div className="bg-gradient-to-br from-lucky-50 to-lucky-100 rounded-xl p-3 text-center border border-lucky-200">
                                                 <p className="text-2xl font-bold text-lucky-600">{plan.stamps_per_100}</p>
-                                                <p className="text-xs text-lucky-700 font-medium">📊 Stamps / <CurrencySymbol />100</p>
+                                                <p className="text-xs text-lucky-700 font-medium">Per <CurrencySymbol />100</p>
                                             </div>
                                             <div className="bg-gradient-to-br from-ticket-50 to-ticket-100 rounded-xl p-3 text-center border border-ticket-200">
                                                 <p className="text-2xl font-bold text-ticket-600">{plan.max_discounted_bills}</p>
-                                                <p className="text-xs text-ticket-700 font-medium">🎟️ Max Bills</p>
-                                            </div>
-                                            <div className="bg-gradient-to-br from-ticket-50 to-ticket-100 rounded-xl p-3 text-center border border-ticket-200">
-                                                <p className="text-2xl font-bold text-ticket-600"><CurrencySymbol />{plan.max_redeemable_amount.toFixed(2)}</p>
-                                                <p className="text-xs text-ticket-700 font-medium">💰 Max Redeem</p>
+                                                <p className="text-xs text-ticket-700 font-medium">Max Bills</p>
                                             </div>
                                         </div>
-                                        {plan.expires_at && (
-                                            <p className="text-xs text-gray-500 mt-3 text-center bg-gray-50 rounded-full py-1">
-                                                ⏳ Expires: <span className="font-bold text-gray-700">{plan.expires_at}</span>
-                                                {plan.duration_days && <span> ({plan.duration_days} day plan)</span>}
-                                            </p>
+                                        <div className="grid grid-cols-2 gap-3 text-sm mt-3">
+                                            <div className="bg-gradient-to-br from-ticket-50 to-ticket-100 rounded-xl p-3 text-center border border-ticket-200">
+                                                <p className="text-2xl font-bold text-ticket-600"><CurrencySymbol />{plan.max_redeemable_amount.toFixed(2)}</p>
+                                                <p className="text-xs text-ticket-700 font-medium">Max Redeem</p>
+                                            </div>
+                                            {plan.duration_days && (
+                                                <div className="bg-gradient-to-br from-prize-50 to-prize-100 rounded-xl p-3 text-center border border-prize-200">
+                                                    <p className="text-2xl font-bold text-prize-600">{plan.duration_days}</p>
+                                                    <p className="text-xs text-prize-700 font-medium">Validity (Days)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {(plan.purchased_at || plan.expires_at) && (
+                                            <div className="mt-3 space-y-1 text-xs text-gray-500 bg-gray-50 rounded-xl p-3">
+                                                {plan.purchased_at && (
+                                                    <div className="flex justify-between">
+                                                        <span>Purchased</span>
+                                                        <span className="font-bold text-gray-700">{plan.purchased_at}</span>
+                                                    </div>
+                                                )}
+                                                {plan.expires_at && (
+                                                    <div className="flex justify-between">
+                                                        <span>Expires</span>
+                                                        <span className="font-bold text-gray-700">{plan.expires_at}</span>
+                                                    </div>
+                                                )}
+                                                {plan.days_remaining !== null && plan.days_remaining >= 0 && (
+                                                    <div className="flex justify-between">
+                                                        <span>Remaining</span>
+                                                        <span className={`font-bold ${plan.days_remaining <= 7 ? 'text-red-600' : 'text-green-600'}`}>
+                                                            {plan.days_remaining} days
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </>
                                 ) : (
@@ -236,7 +262,5 @@ function StatCard({ label, value, emoji, color }) {
             <p className="text-2xl font-bold">{value}</p>
             <p className="text-xs mt-1 font-medium opacity-80">{label}</p>
         </div>
-    );
-}
     );
 }

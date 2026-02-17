@@ -6,44 +6,49 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Register({ status, debugOtp }) {
+export default function OtpLogin({ status, debugOtp }) {
     const [otpSent, setOtpSent] = useState(false);
 
-    const registerForm = useForm({
-        name: '',
-        email: '',
-        mobile: '',
+    const sendForm = useForm({
+        identifier: '',
     });
 
     const verifyForm = useForm({
+        identifier: '',
         otp: '',
     });
 
     const handleSendOtp = (e) => {
         e.preventDefault();
 
-        registerForm.post(route('register.send-otp'), {
+        sendForm.post(route('otp-login.send'), {
             preserveScroll: true,
             onSuccess: (page) => {
                 setOtpSent(true);
+                verifyForm.setData('identifier', sendForm.data.identifier);
 
+                // Auto-fill OTP in debug mode
                 if (page.props.debugOtp) {
-                    verifyForm.setData('otp', page.props.debugOtp);
+                    verifyForm.setData((prev) => ({
+                        ...prev,
+                        identifier: sendForm.data.identifier,
+                        otp: page.props.debugOtp,
+                    }));
                 }
             },
         });
     };
 
-    const handleVerify = (e) => {
+    const handleVerifyOtp = (e) => {
         e.preventDefault();
 
-        verifyForm.post(route('register.verify'), {
+        verifyForm.post(route('otp-login.verify'), {
             onFinish: () => verifyForm.reset('otp'),
         });
     };
 
     const handleResendOtp = () => {
-        registerForm.post(route('register.send-otp'), {
+        sendForm.post(route('otp-login.send'), {
             preserveScroll: true,
             onSuccess: (page) => {
                 if (page.props.debugOtp) {
@@ -53,14 +58,15 @@ export default function Register({ status, debugOtp }) {
         });
     };
 
-    const handleBack = () => {
+    const handleChangeIdentifier = () => {
         setOtpSent(false);
         verifyForm.reset();
+        sendForm.reset();
     };
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title="OTP Login" />
 
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
@@ -72,100 +78,77 @@ export default function Register({ status, debugOtp }) {
                 <form onSubmit={handleSendOtp}>
                     <div className="mb-4 text-center">
                         <h2 className="text-lg font-semibold text-lucky-700">
-                            Create Account
+                            Login with OTP
                         </h2>
                         <p className="mt-1 text-sm text-gray-500">
-                            We'll verify your mobile number with OTP.
+                            Enter your email or mobile number to receive a
+                            one-time password.
                         </p>
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="name" value="Name" />
+                        <InputLabel
+                            htmlFor="identifier"
+                            value="Email or Mobile"
+                        />
+
                         <TextInput
-                            id="name"
-                            name="name"
-                            value={registerForm.data.name}
+                            id="identifier"
+                            type="text"
+                            name="identifier"
+                            value={sendForm.data.identifier}
                             className="mt-1 block w-full"
-                            autoComplete="name"
                             isFocused={true}
+                            placeholder="email@example.com or 9876543210"
                             onChange={(e) =>
-                                registerForm.setData('name', e.target.value)
+                                sendForm.setData('identifier', e.target.value)
                             }
                         />
-                        <InputError
-                            message={registerForm.errors.name}
-                            className="mt-2"
-                        />
-                    </div>
 
-                    <div className="mt-4">
-                        <InputLabel htmlFor="email" value="Email" />
-                        <TextInput
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={registerForm.data.email}
-                            className="mt-1 block w-full"
-                            autoComplete="username"
-                            onChange={(e) =>
-                                registerForm.setData('email', e.target.value)
-                            }
-                        />
                         <InputError
-                            message={registerForm.errors.email}
-                            className="mt-2"
-                        />
-                    </div>
-
-                    <div className="mt-4">
-                        <InputLabel htmlFor="mobile" value="Mobile Number" />
-                        <TextInput
-                            id="mobile"
-                            type="tel"
-                            name="mobile"
-                            value={registerForm.data.mobile}
-                            className="mt-1 block w-full"
-                            autoComplete="tel"
-                            placeholder="9876543210"
-                            onChange={(e) =>
-                                registerForm.setData('mobile', e.target.value)
-                            }
-                        />
-                        <InputError
-                            message={registerForm.errors.mobile}
+                            message={sendForm.errors.identifier}
                             className="mt-2"
                         />
                     </div>
 
                     <div className="mt-4 flex items-center justify-between">
-                        <Link
-                            href={route('login')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-lucky-500 focus:ring-offset-2"
-                        >
-                            Already registered?
-                        </Link>
+                        <div className="flex flex-col gap-1">
+                            <Link
+                                href={route('password-login')}
+                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-lucky-500 focus:ring-offset-2"
+                            >
+                                Use password instead
+                            </Link>
+                            <Link
+                                href={route('register')}
+                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-lucky-500 focus:ring-offset-2"
+                            >
+                                Create account
+                            </Link>
+                        </div>
 
-                        <PrimaryButton disabled={registerForm.processing}>
+                        <PrimaryButton disabled={sendForm.processing}>
                             Send OTP
                         </PrimaryButton>
                     </div>
                 </form>
             ) : (
-                <form onSubmit={handleVerify}>
+                <form onSubmit={handleVerifyOtp}>
                     <div className="mb-4 text-center">
                         <h2 className="text-lg font-semibold text-lucky-700">
-                            Verify Mobile
+                            Enter OTP
                         </h2>
                         <p className="mt-1 text-sm text-gray-500">
-                            Enter the 6-digit code sent to{' '}
+                            We sent a 6-digit code to{' '}
                             <span className="font-medium text-lucky-600">
-                                {registerForm.data.mobile}
+                                {sendForm.data.identifier}
                             </span>
                         </p>
                     </div>
 
                     <div>
                         <InputLabel htmlFor="otp" value="One-Time Password" />
+
                         <TextInput
                             id="otp"
                             type="text"
@@ -183,8 +166,13 @@ export default function Register({ status, debugOtp }) {
                                 )
                             }
                         />
+
                         <InputError
                             message={verifyForm.errors.otp}
+                            className="mt-2"
+                        />
+                        <InputError
+                            message={verifyForm.errors.identifier}
                             className="mt-2"
                         />
                     </div>
@@ -194,22 +182,22 @@ export default function Register({ status, debugOtp }) {
                             <button
                                 type="button"
                                 onClick={handleResendOtp}
-                                disabled={registerForm.processing}
+                                disabled={sendForm.processing}
                                 className="text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none"
                             >
                                 Resend OTP
                             </button>
                             <button
                                 type="button"
-                                onClick={handleBack}
+                                onClick={handleChangeIdentifier}
                                 className="text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none"
                             >
-                                Edit details
+                                Change email/mobile
                             </button>
                         </div>
 
                         <PrimaryButton disabled={verifyForm.processing}>
-                            Verify & Register
+                            Verify & Login
                         </PrimaryButton>
                     </div>
                 </form>
