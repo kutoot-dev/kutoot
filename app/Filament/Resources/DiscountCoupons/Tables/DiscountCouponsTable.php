@@ -15,10 +15,11 @@ class DiscountCouponsTable
     {
         return $table
             ->columns([
-                TextColumn::make('coupon_category_id')
-                    ->numeric()
+                TextColumn::make('category.name')
+                    ->label('Category')
                     ->sortable(),
-                TextColumn::make('merchantLocation.id')
+                TextColumn::make('merchantLocation.branch_name')
+                    ->label('Merchant Location')
                     ->searchable(),
                 TextColumn::make('title')
                     ->searchable(),

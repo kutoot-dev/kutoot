@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     /**
      * Run the migrations.
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('unique_code')->unique(); // KUT-1234
             $table->string('token')->unique(); // Secret tokens for URLs
             $table->foreignId('merchant_location_id')->nullable()->constrained('merchant_locations')->nullOnDelete();
-            $table->string('status')->default('available'); // available, linked
+            $table->boolean('status')->default(true); // true = active/available, false = inactive/linked
             $table->timestamp('linked_at')->nullable();
             $table->foreignId('linked_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

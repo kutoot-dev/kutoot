@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\QrCodes\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,15 +19,19 @@ class QrCodesTable
                     ->searchable(),
                 TextColumn::make('token')
                     ->searchable(),
-                TextColumn::make('merchantLocation.id')
+                TextColumn::make('merchantLocation.branch_name')
+                    ->label('Merchant Location')
                     ->searchable(),
                 TextColumn::make('status')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ? 'Active' : 'Inactive')
+                    ->color(fn ($state) => $state ? 'success' : 'danger')
                     ->searchable(),
                 TextColumn::make('linked_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('linked_by')
-                    ->numeric()
+                TextColumn::make('executive.name')
+                    ->label('Linked By')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -41,6 +46,20 @@ class QrCodesTable
                 //
             ])
             ->recordActions([
+                Action::make('preview')
+                    ->label('Preview')
+                    ->icon('heroicon-m-eye')
+                    ->modalContent(fn ($record) => view('filament.components.qr-code-preview', ['getRecord' => fn () => $record]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->modalWidth('lg'),
+                Action::make('print')
+                    ->label('Print')
+                    ->icon('heroicon-m-printer')
+                    ->modalContent(fn ($record) => view('filament.components.qr-code-preview', ['getRecord' => fn () => $record]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->modalWidth('lg'),
                 EditAction::make(),
             ])
             ->toolbarActions([

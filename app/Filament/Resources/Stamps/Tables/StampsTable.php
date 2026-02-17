@@ -16,9 +16,12 @@ class StampsTable
             ->columns([
                 TextColumn::make('user.name')
                     ->searchable(),
-                TextColumn::make('campaign.id')
+                TextColumn::make('campaign.reward_name')
+                    ->label('Campaign')
                     ->searchable(),
-                TextColumn::make('transaction.id')
+                TextColumn::make('transaction.amount')
+                    ->label('Transaction Amount')
+                    ->money('INR')
                     ->searchable(),
                 TextColumn::make('code')
                     ->searchable(),

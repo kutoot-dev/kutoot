@@ -16,7 +16,8 @@ class TransactionsTable
             ->columns([
                 TextColumn::make('user.name')
                     ->searchable(),
-                TextColumn::make('merchantLocation.id')
+                TextColumn::make('merchantLocation.branch_name')
+                    ->label('Merchant Location')
                     ->searchable(),
                 TextColumn::make('amount')
                     ->numeric()

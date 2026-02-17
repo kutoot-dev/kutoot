@@ -18,7 +18,9 @@ class CouponRedemptionsTable
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->searchable(),
-                TextColumn::make('transaction.id')
+                TextColumn::make('transaction.amount')
+                    ->label('Transaction Amount')
+                    ->money('INR')
                     ->searchable(),
                 TextColumn::make('discount_applied')
                     ->numeric()

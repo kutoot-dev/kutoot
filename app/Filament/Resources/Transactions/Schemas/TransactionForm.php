@@ -16,7 +16,7 @@ class TransactionForm
                     ->relationship('user', 'name')
                     ->required(),
                 Select::make('merchant_location_id')
-                    ->relationship('merchantLocation', 'id')
+                    ->relationship('merchantLocation', 'branch_name')
                     ->required(),
                 TextInput::make('amount')
                     ->required()

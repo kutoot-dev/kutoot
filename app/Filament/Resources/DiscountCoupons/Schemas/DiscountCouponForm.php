@@ -16,11 +16,11 @@ class DiscountCouponForm
     {
         return $schema
             ->components([
-                TextInput::make('coupon_category_id')
-                    ->required()
-                    ->numeric(),
+                Select::make('coupon_category_id')
+                    ->relationship('category', 'name')
+                    ->required(),
                 Select::make('merchant_location_id')
-                    ->relationship('merchantLocation', 'id'),
+                    ->relationship('merchantLocation', 'branch_name'),
                 TextInput::make('title')
                     ->required(),
                 Textarea::make('description')

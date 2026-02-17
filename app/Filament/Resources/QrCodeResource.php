@@ -14,6 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+use App\Filament\Resources\QrCodes\Pages\PrintQrCode;
+
 class QrCodeResource extends Resource
 {
     protected static ?string $model = QrCode::class;
@@ -45,6 +47,7 @@ class QrCodeResource extends Resource
             'index' => ListQrCodes::route('/'),
             'create' => CreateQrCode::route('/create'),
             'edit' => EditQrCode::route('/{record}/edit'),
+            'print' => PrintQrCode::route('/{record}/print'),
         ];
     }
 }

@@ -16,10 +16,10 @@ class StampForm
                     ->relationship('user', 'name')
                     ->required(),
                 Select::make('campaign_id')
-                    ->relationship('campaign', 'id')
+                    ->relationship('campaign', 'reward_name')
                     ->required(),
                 Select::make('transaction_id')
-                    ->relationship('transaction', 'id')
+                    ->relationship('transaction', 'amount')
                     ->required(),
                 TextInput::make('code')
                     ->required(),

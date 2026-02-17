@@ -17,9 +17,9 @@ class QrCodeFactory extends Factory
     public function definition(): array
     {
         return [
-            'unique_code' => 'KUT-'.$this->faker->unique()->numberBetween(1000, 9999),
+            'unique_code' => 'KUT-' . $this->faker->unique()->numberBetween(1000, 9999),
             'token' => \Illuminate\Support\Str::random(32),
-            'status' => 'available',
+            'status' => true,
         ];
     }
 }

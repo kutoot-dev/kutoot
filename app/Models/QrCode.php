@@ -18,6 +18,7 @@ class QrCode extends Model
 
     protected $casts = [
         'linked_at' => 'datetime',
+        'status' => 'boolean',
     ];
 
     public function merchantLocation(): BelongsTo
@@ -27,7 +28,7 @@ class QrCode extends Model
 
     public function executive(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'linked_by');
+        return $this->belongsTo(User::class , 'linked_by');
     }
 
     public function getUrlAttribute(): string

@@ -12,14 +12,14 @@ class CouponRedemptionForm
     {
         return $schema
             ->components([
-                Select::make('coupon_id')
+                Select::make('discount_coupon_id')
                     ->relationship('coupon', 'title')
                     ->required(),
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required(),
                 Select::make('transaction_id')
-                    ->relationship('transaction', 'id')
+                    ->relationship('transaction', 'amount')
                     ->required(),
                 TextInput::make('discount_applied')
                     ->required()
