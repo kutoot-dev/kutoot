@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Enums\TransactionType;
+use App\Http\Requests\UpgradePlanRequest;
+use App\Http\Requests\VerifyPaymentRequest;
 use App\Models\SubscriptionPlan;
 use App\Models\Transaction;
 use App\Services\Payments\PaymentManager;
@@ -81,14 +83,13 @@ class SubscriptionController extends Controller
             'primaryCampaignId' => $user?->primary_campaign_id,
             'availableCampaigns' => $availableCampaigns,
             'isLoggedIn' => (bool) $user,
+            'appDebug' => ! app()->isProduction(),
         ]);
     }
 
-    public function upgrade(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function upgrade(UpgradePlanRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $validated = $request->validate([
-            'plan_id' => 'required|exists:subscription_plans,id',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
@@ -137,8 +138,8 @@ class SubscriptionController extends Controller
             'commission_amount' => 0,
         ]);
 
-        // Debug mode: skip payment gateway and auto-complete
-        if (config('app.debug')) {
+        // Non-production mode: skip payment gateway and auto-complete
+        if (! app()->isProduction()) {
             $transaction->update([
                 'payment_status' => PaymentStatus::Paid,
                 'payment_id' => 'debug_'.uniqid(),
@@ -178,7 +179,7 @@ class SubscriptionController extends Controller
     /**
      * Verify payment for a plan purchase and activate subscription.
      */
-    public function verifyPlanPayment(Request $request, Transaction $transaction): RedirectResponse
+    public function verifyPlanPayment(VerifyPaymentRequest $request, Transaction $transaction): RedirectResponse
     {
         $gateway = $this->paymentManager->driver($transaction->payment_gateway);
 

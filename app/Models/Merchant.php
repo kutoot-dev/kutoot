@@ -36,7 +36,8 @@ class Merchant extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Merchant \"{$this->name}\" was {$eventName}");
     }
 
     /**

@@ -2,13 +2,20 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import CurrencySymbol from '@/Components/CurrencySymbol';
 import { useState, useEffect } from 'react';
+import useRazorpay from '@/Hooks/useRazorpay';
 
 
 export default function Index({ auth, plans, currentSubscription, primaryCampaignId, availableCampaigns, isLoggedIn }) {
     const currentPlanIndex = plans.findIndex(p => p.id === currentSubscription?.plan_id);
-    const { flash } = usePage().props;
+    const { flash, appDebug } = usePage().props;
     const [showCampaignModal, setShowCampaignModal] = useState(false);
     const [selectedCampaign, setSelectedCampaign] = useState(null);
+    const [upgrading, setUpgrading] = useState(false);
+
+    const { initiatePayment, isLoading: razorpayLoading } = useRazorpay({
+        isProduction: !appDebug,
+        user: auth.user,
+    });
 
     useEffect(() => {
         if (flash?.needsCampaignSelection) {
@@ -16,9 +23,73 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
         }
     }, [flash?.needsCampaignSelection]);
 
-    const handleUpgrade = (planId) => {
-        if (confirm('Are you sure you want to upgrade to this plan?')) {
-            router.post(route('subscriptions.upgrade'), { plan_id: planId });
+    const handleUpgrade = async (plan) => {
+        if (!confirm('Are you sure you want to upgrade to this plan?')) return;
+
+        // Free plan or non-production mode: standard Inertia POST handles it
+        if (plan.price <= 0 || appDebug) {
+            router.post(route('subscriptions.upgrade'), { plan_id: plan.id });
+            return;
+        }
+
+        // Paid plan in production: fetch order via JSON, then open Razorpay popup
+        setUpgrading(true);
+        try {
+            const response = await fetch(route('subscriptions.upgrade'), {
+                method: 'POST',
+                // `route()` returns a full URL; ensure cookies accompany the
+                // request or the session will be missing and the CSRF token
+                // stored in it won't match.  Same-origin is safe here.
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ plan_id: plan.id }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || 'Something went wrong');
+                setUpgrading(false);
+                return;
+            }
+
+            setUpgrading(false);
+
+            const { order, transaction_id, plan_id } = result;
+            const options = {
+                key: order.key,
+                amount: order.amount,
+                currency: order.currency,
+                name: "Kutoot",
+                description: `Upgrade to ${plan.name}`,
+                order_id: order.id,
+                handler: function (response) {
+                    router.post(route('subscriptions.verifyPlanPayment', transaction_id), {
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        plan_id: plan_id,
+                    });
+                },
+                prefill: {
+                    name: auth.user?.name || '',
+                    email: auth.user?.email || '',
+                },
+                theme: {
+                    color: "#f08c10",
+                },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.error('Payment initiation failed', error);
+            alert('Payment initiation failed. Please try again.');
+            setUpgrading(false);
         }
     };
 
@@ -126,10 +197,11 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                             </Link>
                                         ) : plans.indexOf(plan) > currentPlanIndex ? (
                                             <button
-                                                onClick={() => handleUpgrade(plan.id)}
-                                                className="w-full lucky-gradient text-white font-bold py-2.5 px-4 rounded-full transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm"
+                                                onClick={() => handleUpgrade(plan)}
+                                                disabled={upgrading}
+                                                className="w-full lucky-gradient text-white font-bold py-2.5 px-4 rounded-full transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm disabled:opacity-50"
                                             >
-                                                🚀 Upgrade
+                                                {upgrading ? '⏳ Processing...' : '🚀 Upgrade'}
                                             </button>
                                         ) : (
                                             <p className="w-full text-center text-xs text-gray-400 py-2.5 bg-gray-50 rounded-full">Lower tier</p>

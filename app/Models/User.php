@@ -32,7 +32,8 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "User \"{$this->name}\" was {$eventName}");
     }
 
     /**

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -8,6 +8,7 @@ import TextInput from '@/Components/TextInput';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import CurrencySymbol from '@/Components/CurrencySymbol';
+import useRazorpay from '@/Hooks/useRazorpay';
 
 
 export default function Index({ auth, coupons, locations, planName, stampsPerHundred, primaryCampaign, availableCampaigns, remainingRedeemAmount, maxRedeemableAmount }) {
@@ -24,17 +25,10 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
     const selectedLocationName = locations.find(l => String(l.id) === String(data.merchant_location_id))?.name;
 
-    useEffect(() => {
-        if (appDebug) return; // Skip Razorpay in debug mode
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-
-        return () => {
-            document.body.removeChild(script);
-        }
-    }, []);
+    const { initiatePayment: razorpayInitiate, isLoading: razorpayLoading } = useRazorpay({
+        isProduction: !appDebug,
+        user: auth.user,
+    });
 
 
     const confirmRedemption = (coupon) => {
@@ -53,26 +47,23 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
         reset();
     };
 
-    const redeemCoupon = (e) => {
+    const initiatePayment = (e) => {
         e.preventDefault();
 
-        post(route('coupons.redeem', selectedCoupon.id), {
-            preserveScroll: true,
-            onSuccess: (page) => {
-                if (page.props.flash?.order || page.props.order) {
-                    // Logic for JSON response if handled by Inertia as visit
-                    // But we used response()->json() in controller which isn't ideal for Inertia partials
-                    // Let's adjust controller to use Inertia::render or handle it here
-                }
-            },
-            onError: (err) => console.error(err),
-            // Custom handler because we are returning JSON from a POST
-            onFinish: () => { },
+        const couponId = selectedCoupon?.id;
+        if (!couponId) return;
+
+        razorpayInitiate({
+            orderRoute: route('coupons.redeem', couponId),
+            orderData: { ...data },
+            verifyRoute: route('coupons.verify-payment', '__TRANSACTION_ID__'),
+            description: `Payment for ${selectedCoupon.title}`,
+            onDebugSuccess: () => closeModal(),
         });
     };
 
-    // Re-implementing redeemCoupon to handle the JSON response manually since we're using a payment gateway
-    const initiatePayment = async (e) => {
+    // Override initiatePayment to handle the transaction_id from the order response
+    const handlePayment = async (e) => {
         e.preventDefault();
 
         const couponId = selectedCoupon?.id;
@@ -80,7 +71,7 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
         if (!couponId) return;
 
-        // Debug mode: use standard Inertia form post (returns redirect)
+        // Non-production mode: use standard Inertia form post (returns redirect)
         if (appDebug) {
             router.post(route('coupons.redeem', couponId), formData, {
                 onSuccess: () => closeModal(),
@@ -91,11 +82,10 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
         try {
             const response = await fetch(route('coupons.redeem', couponId), {
-                method: 'POST',
-                headers: {
+                method: 'POST',                credentials: 'same-origin',                headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify(formData),
             });
@@ -104,7 +94,33 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
             if (response.ok) {
                 closeModal();
-                handleRazorpayPayment(result.order, result.transaction_id);
+                // Use the hook's openCheckout with the real transaction_id for verification
+                const { order, transaction_id } = result;
+                const options = {
+                    key: order.key,
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: "Kutoot",
+                    description: `Payment for ${selectedCoupon.title}`,
+                    order_id: order.id,
+                    handler: function (response) {
+                        router.post(route('coupons.verify-payment', transaction_id), {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                        });
+                    },
+                    prefill: {
+                        name: auth.user.name,
+                        email: auth.user.email,
+                    },
+                    theme: {
+                        color: "#f08c10",
+                    },
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
             } else {
                 alert(result.error || 'Something went wrong');
             }
@@ -112,34 +128,6 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
             console.error('Payment initiation failed', error);
             alert('Payment initiation failed. Please try again.');
         }
-    };
-
-    const handleRazorpayPayment = (order, transactionId) => {
-        const options = {
-            key: order.key,
-            amount: order.amount,
-            currency: order.currency,
-            name: "Kutoot",
-            description: `Payment for ${selectedCoupon.title}`,
-            order_id: order.id,
-            handler: function (response) {
-                router.post(route('coupons.verify-payment', transactionId), {
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_signature: response.razorpay_signature,
-                });
-            },
-            prefill: {
-                name: auth.user.name,
-                email: auth.user.email,
-            },
-            theme: {
-                color: "#f08c10",
-            },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.open();
     };
 
     const calculateBreakdown = () => {
@@ -266,7 +254,7 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
             </div>
 
             <Modal show={confirmingRedemption} onClose={closeModal}>
-                <form onSubmit={initiatePayment} className="p-6">
+                <form onSubmit={handlePayment} className="p-6">
                     <h2 className="font-display text-lg text-gray-900 flex items-center gap-2">
                         <span>🎟️</span> Redeem: {selectedCoupon?.title}
                         {selectedLocationName && (

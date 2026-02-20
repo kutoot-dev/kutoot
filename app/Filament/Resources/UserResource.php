@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Filament\Resources\Users\RelationManagers\ActivityLogsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\CouponRedemptionsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\StampsRelationManager;
 use App\Filament\Resources\Users\RelationManagers\SubscriptionsRelationManager;
@@ -47,6 +48,7 @@ class UserResource extends Resource
             SubscriptionsRelationManager::class,
             StampsRelationManager::class,
             CouponRedemptionsRelationManager::class,
+            ActivityLogsRelationManager::class,
         ];
     }
 

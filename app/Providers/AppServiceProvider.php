@@ -6,6 +6,7 @@ use App\Contracts\SmsContract;
 use App\Services\Sms\SmsManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
@@ -31,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
 
         Model::unguard();
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        // Intercept all outgoing mail in non-production environments
+        if (! $this->app->isProduction()) {
+            Mail::alwaysTo(config('mail.dev_address', 'sathishreddy@kutoot.com'));
+        }
 
         LogViewer::auth(function ($request) {
             return true; // Allow access to log viewer for all users

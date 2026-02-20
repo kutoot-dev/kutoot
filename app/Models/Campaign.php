@@ -40,7 +40,8 @@ class Campaign extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Campaign \"{$this->reward_name}\" was {$eventName}");
     }
 
     /**

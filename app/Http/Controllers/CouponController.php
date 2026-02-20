@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\PaymentStatus;
 use App\Enums\TransactionType;
 use App\Events\CommissionEarned;
+use App\Http\Requests\RedeemCouponRequest;
+use App\Http\Requests\VerifyPaymentRequest;
 use App\Models\DiscountCoupon;
 use App\Models\MerchantLocation;
 use App\Models\Transaction;
@@ -63,19 +65,15 @@ class CouponController extends Controller
             ] : null,
             'availableCampaigns' => $availableCampaigns,
             'isLoggedIn' => (bool) $user,
-            'appDebug' => config('app.debug'),
+            'appDebug' => ! app()->isProduction(),
             'maxRedeemableAmount' => $maxRedeemableAmount,
             'remainingRedeemAmount' => $remainingRedeemAmount,
         ]);
     }
 
-    public function redeem(Request $request, DiscountCoupon $coupon)
+    public function redeem(RedeemCouponRequest $request, DiscountCoupon $coupon)
     {
-        $validated = $request->validate([
-            'merchant_location_id' => 'required|exists:merchant_locations,id',
-            'amount' => 'required|numeric|min:0.01',
-            'campaign_id' => 'nullable|exists:campaigns,id',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         if (! $user) {
@@ -153,8 +151,8 @@ class CouponController extends Controller
                     'total_paid' => $grandTotal,
                 ];
 
-                // 5. Debug mode: skip payment gateway and auto-complete
-                if (config('app.debug')) {
+                // 5. Non-production mode: skip payment gateway and auto-complete
+                if (! app()->isProduction()) {
                     $transaction->update([
                         'payment_status' => PaymentStatus::Paid,
                         'payment_id' => 'debug_'.uniqid(),
@@ -201,7 +199,7 @@ class CouponController extends Controller
         }
     }
 
-    public function verifyPayment(Request $request, Transaction $transaction)
+    public function verifyPayment(VerifyPaymentRequest $request, Transaction $transaction)
     {
         $gateway = $this->paymentManager->driver($transaction->payment_gateway);
 

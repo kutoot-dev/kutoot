@@ -39,7 +39,8 @@ class DiscountCoupon extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Coupon \"{$this->title}\" was {$eventName}");
     }
 
     /**

@@ -30,7 +30,8 @@ class SubscriptionPlan extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Subscription plan \"{$this->name}\" was {$eventName}");
     }
 
     /**

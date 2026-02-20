@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
+use App\Services\ActivityLogHumanizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -10,6 +11,10 @@ use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        protected ActivityLogHumanizer $humanizer,
+    ) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -63,14 +68,16 @@ class DashboardController extends Controller
             ]);
 
         $activityLogs = Activity::causedBy($user)
+            ->with('subject')
             ->latest()
             ->limit(15)
             ->get()
             ->map(fn ($a) => [
                 'id' => $a->id,
-                'description' => $a->description,
+                'description' => $this->humanizer->humanize($a),
                 'subject_type' => class_basename($a->subject_type ?? ''),
                 'event' => $a->event,
+                'icon' => $this->humanizer->icon($a->event ?? 'updated'),
                 'created_at' => $a->created_at->diffForHumans(),
             ]);
 

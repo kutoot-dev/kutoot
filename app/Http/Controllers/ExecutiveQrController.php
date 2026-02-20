@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\QrCodeStatus;
+use App\Http\Requests\GenerateBatchQrRequest;
+use App\Http\Requests\LinkQrRequest;
 use App\Models\MerchantLocation;
 use App\Models\QrCode;
 use Endroid\QrCode\Color\Color;
@@ -29,12 +31,9 @@ class ExecutiveQrController extends Controller
         ]);
     }
 
-    public function link(Request $request)
+    public function link(LinkQrRequest $request)
     {
-        $validated = $request->validate([
-            'unique_code' => 'required|string|exists:qr_codes,unique_code',
-            'merchant_location_id' => 'required|exists:merchant_locations,id',
-        ]);
+        $validated = $request->validated();
 
         $qrCode = QrCode::where('unique_code', $validated['unique_code'])->firstOrFail();
 
@@ -52,10 +51,11 @@ class ExecutiveQrController extends Controller
         return back()->with('success', 'QR Code successfully linked to '.$qrCode->merchantLocation->branch_name);
     }
 
-    public function generateBatch(Request $request)
+    public function generateBatch(GenerateBatchQrRequest $request)
     {
-        $count = $request->input('count', 10);
-        $prefix = $request->input('prefix', 'KUT-');
+        $validated = $request->validated();
+        $count = $validated['count'];
+        $prefix = $validated['prefix'] ?? 'KUT-';
 
         $latest = QrCode::where('unique_code', 'LIKE', $prefix.'%')
             ->orderBy('unique_code', 'desc')

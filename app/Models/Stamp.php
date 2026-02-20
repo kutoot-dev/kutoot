@@ -27,7 +27,8 @@ class Stamp extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Stamp ({$this->code}) was {$eventName}");
     }
 
     /**

@@ -253,13 +253,10 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                                 {activityLogs.map(log => (
                                     <li key={log.id} className="flex items-start gap-3 text-sm p-2 rounded-lg hover:bg-lucky-50/50 transition-colors">
                                         <span className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-lucky-100 to-lucky-200 flex items-center justify-center text-lucky-600 text-xs font-bold">
-                                            ⚡
+                                            {log.icon ?? '⚡'}
                                         </span>
                                         <div className="flex-1">
                                             <p className="text-gray-900">
-                                                <span className="font-bold capitalize text-lucky-700">{log.event ?? 'action'}</span>
-                                                {log.subject_type && <span className="text-gray-500"> on {log.subject_type}</span>}
-                                                {' — '}
                                                 {log.description}
                                             </p>
                                             <p className="text-xs text-gray-400">{log.created_at}</p>

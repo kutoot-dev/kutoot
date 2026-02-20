@@ -37,7 +37,8 @@ class MerchantLocation extends Model
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName): string => "Store location \"{$this->branch_name}\" was {$eventName}");
     }
 
     /**
