@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Session;
 
 class OtpService
 {
-    public function __construct(protected \App\Contracts\SmsContract $sms)
-    {
-    }
+    public function __construct(protected \App\Contracts\SmsContract $sms) {}
 
     public const OTP_EXPIRY_MINUTES = 5;
 
     public function generateOtp(User $user): string
     {
-        $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $length = (int) config('auth.otp_length', 6);
+        $max = (int) str_repeat('9', $length);
+        $otp = str_pad((string) random_int(0, $max), $length, '0', STR_PAD_LEFT);
 
         $user->update([
             'otp_code' => $otp,
@@ -31,7 +31,9 @@ class OtpService
      */
     public function generateOtpForSession(string $identifier): string
     {
-        $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $length = (int) config('auth.otp_length', 6);
+        $max = (int) str_repeat('9', $length);
+        $otp = str_pad((string) random_int(0, $max), $length, '0', STR_PAD_LEFT);
 
         Session::put("otp.{$identifier}", [
             'code' => $otp,
@@ -43,7 +45,7 @@ class OtpService
 
     public function verifyOtp(User $user, string $otp): bool
     {
-        if (!$user->otp_code || !$user->otp_expires_at) {
+        if (! $user->otp_code || ! $user->otp_expires_at) {
             return false;
         }
 
@@ -69,7 +71,7 @@ class OtpService
     {
         $data = Session::get("otp.{$identifier}");
 
-        if (!$data) {
+        if (! $data) {
             return false;
         }
 
@@ -103,12 +105,12 @@ class OtpService
     {
         $target = $identifier;
 
-        if (!$target && $user) {
+        if (! $target && $user) {
             $target = match ($channel) {
-                    'mobile' => $user->mobile,
-                    'email' => $user->email,
-                    default => $user->email ?? $user->mobile,
-                };
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                default => $user->email ?? $user->mobile,
+            };
         }
 
         Log::info("OTP for {$channel} [{$target}]: {$otp}");

@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'needsCampaignSelection' => fn () => $request->session()->get('needsCampaignSelection'),
             ],
+            'otpLength' => (int) config('auth.otp_length', 6),
         ];
     }
 }

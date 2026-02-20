@@ -112,4 +112,16 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | OTP Length
+    |--------------------------------------------------------------------------
+    |
+    | The number of digits in a one-time password. Can be controlled via the
+    | OTP_LENGTH environment variable. Defaults to 6.
+    |
+    */
+
+    'otp_length' => env('OTP_LENGTH', 6),
+
 ];

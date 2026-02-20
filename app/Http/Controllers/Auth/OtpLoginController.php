@@ -48,7 +48,7 @@ class OtpLoginController extends Controller
 
         $flash = ['status' => 'OTP sent successfully! Check your '.($isEmail ? 'email' : 'phone').'.'];
 
-        if (!app()->isProduction()) {
+        if (! app()->isProduction()) {
             $flash['debugOtp'] = $otp;
         }
 

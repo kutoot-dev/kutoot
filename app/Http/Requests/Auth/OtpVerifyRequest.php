@@ -16,9 +16,11 @@ class OtpVerifyRequest extends FormRequest
      */
     public function rules(): array
     {
+        $length = (int) config('auth.otp_length', 6);
+
         return [
             'identifier' => ['required', 'string', 'max:255'],
-            'otp' => ['required', 'string', 'size:6'],
+            'otp' => ['required', 'string', "size:{$length}"],
         ];
     }
 
@@ -27,10 +29,12 @@ class OtpVerifyRequest extends FormRequest
      */
     public function messages(): array
     {
+        $length = (int) config('auth.otp_length', 6);
+
         return [
             'identifier.required' => 'Please enter your email or mobile number.',
             'otp.required' => 'Please enter the OTP.',
-            'otp.size' => 'OTP must be exactly 6 digits.',
+            'otp.size' => "OTP must be exactly {$length} digits.",
         ];
     }
 }
