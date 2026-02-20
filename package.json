@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build --ssr",
+        "build": "vite build",
+        "build:ssr": "vite build --ssr",
         "dev": "vite"
     },
     "devDependencies": {
