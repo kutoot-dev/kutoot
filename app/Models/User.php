@@ -172,11 +172,11 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($panel->getId() === 'admin') {
-            return $this->hasRole(['Super Admin', 'Merchant Admin']);
-        }
+        // if ($panel->getId() === 'admin') {
+        //     return $this->hasRole(['Super Admin', 'Merchant Admin']);
+        // }
 
-        return false;
+        return true;
     }
 
     /**
