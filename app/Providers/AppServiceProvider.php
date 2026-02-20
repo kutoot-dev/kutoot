@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Opcodes\LogViewer\Facades\LogViewer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         Model::unguard();
         Model::shouldBeStrict(! $this->app->isProduction());
 
+        LogViewer::auth(function ($request) {
+            return true; // Allow access to log viewer for all users
+        });
         Gate::before(static function ($user, $ability) {
             return $user->hasRole('Super Admin') ? true : null;
         });
