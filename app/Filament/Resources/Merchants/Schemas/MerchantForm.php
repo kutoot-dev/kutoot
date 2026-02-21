@@ -22,7 +22,8 @@ class MerchantForm
                     ->label('Razorpay Account ID'),
                 FileUpload::make('logo')
                     ->image()
-                    ->directory('merchants/logos'),
+                    ->directory('merchants/logos')
+                    ->visibility('public'),
                 Toggle::make('is_active')
                     ->required(),
             ]);

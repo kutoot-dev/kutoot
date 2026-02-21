@@ -44,6 +44,7 @@ php artisan test --compact
 
 | Setting            | Local         | Production    | Testing   |
 |--------------------|---------------|---------------|-----------|
+| FILESYSTEM_DISK    | public        | s3            | public    |
 | APP_ENV            | local         | production    | testing   |
 | APP_DEBUG          | true          | false         | true      |
 | CACHE_STORE        | file          | redis         | array     |
