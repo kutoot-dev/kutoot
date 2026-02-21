@@ -5,7 +5,7 @@ import EmptyState from '@/Components/EmptyState';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-export default function Dashboard({ auth, user, plan, primaryCampaign, stats, recentActivity, stamps: initialStamps, activityLogs }) {
+export default function Dashboard({ auth, user, plan, primaryCampaign, stats, stamps: initialStamps }) {
     const allStatsZero = stats.stamps_count === 0 && stats.total_coupons_used === 0 && stats.total_discount_redeemed === 0;
     const [stamps, setStamps] = useState(initialStamps);
     const [editingStamp, setEditingStamp] = useState(null);
@@ -180,95 +180,6 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                         </div>
                     )}
 
-                    {/* Recent Activity */}
-                    <div className="coupon-card overflow-hidden">
-                        <div className="p-5 sm:p-6 pb-0 sm:pb-0">
-                            <h3 className="font-display text-lg text-gray-900 mb-4 flex items-center gap-2">
-                                <span className="text-xl">📜</span> Recent Activity
-                            </h3>
-                        </div>
-                        {recentActivity.length > 0 ? (
-                            <>
-                                {/* Desktop table */}
-                                <div className="hidden md:block overflow-x-auto px-5 sm:px-6 pb-5 sm:pb-6">
-                                    <table className="min-w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b-2 border-dashed border-lucky-200 text-left text-lucky-600">
-                                                <th className="pb-2 font-bold">Coupon</th>
-                                                <th className="pb-2 font-bold">Location</th>
-                                                <th className="pb-2 font-bold text-right">Bill</th>
-                                                <th className="pb-2 font-bold text-right">Discount</th>
-                                                <th className="pb-2 font-bold text-right">Paid</th>
-                                                <th className="pb-2 font-bold text-center">Stamps</th>
-                                                <th className="pb-2 font-bold text-right">When</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-dashed divide-lucky-100">
-                                            {recentActivity.map(a => (
-                                                <tr key={a.id} className="hover:bg-lucky-50/50 transition-colors">
-                                                    <td className="py-2.5 text-gray-900 font-medium">{a.coupon_title ?? '—'}</td>
-                                                    <td className="py-2.5 text-gray-600 text-xs">{a.location_name ?? '—'}</td>
-                                                    <td className="py-2.5 text-right text-gray-700"><CurrencySymbol />{a.original_bill_amount.toFixed(2)}</td>
-                                                    <td className="py-2.5 text-right font-bold text-green-600">
-                                                        {a.discount_amount > 0 ? <>-<CurrencySymbol />{a.discount_amount.toFixed(2)}</> : '—'}
-                                                    </td>
-                                                    <td className="py-2.5 text-right font-bold text-lucky-700"><CurrencySymbol />{a.total_paid.toFixed(2)}</td>
-                                                    <td className="py-2.5 text-center">
-                                                        {a.stamps_earned > 0 ? (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lucky-100 text-lucky-700 text-xs font-bold">
-                                                                🎫 {a.stamps_earned}
-                                                            </span>
-                                                        ) : '—'}
-                                                    </td>
-                                                    <td className="py-2.5 text-right text-gray-400 text-xs">{a.created_at}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Mobile cards */}
-                                <div className="md:hidden space-y-3 px-5 pb-5">
-                                    {recentActivity.map(a => (
-                                        <div key={a.id} className="bg-lucky-50/30 rounded-xl p-4 border border-lucky-100">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <p className="font-medium text-gray-900 text-sm">{a.coupon_title ?? 'Transaction'}</p>
-                                                    <p className="text-xs text-gray-500">{a.location_name ?? ''}</p>
-                                                </div>
-                                                {a.stamps_earned > 0 && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lucky-100 text-lucky-700 text-xs font-bold">
-                                                        🎫 {a.stamps_earned}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex justify-between items-center text-sm">
-                                                <div>
-                                                    <span className="text-gray-500">Bill: </span>
-                                                    <span className="text-gray-700"><CurrencySymbol />{a.original_bill_amount.toFixed(2)}</span>
-                                                    {a.discount_amount > 0 && (
-                                                        <span className="ml-2 text-green-600 font-bold text-xs">-<CurrencySymbol />{a.discount_amount.toFixed(2)}</span>
-                                                    )}
-                                                </div>
-                                                <span className="font-bold text-lucky-700"><CurrencySymbol />{a.total_paid.toFixed(2)}</span>
-                                            </div>
-                                            <p className="text-xs text-gray-400 mt-1">{a.created_at}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="px-5 sm:px-6 pb-5 sm:pb-6">
-                                <EmptyState
-                                    icon="💤"
-                                    title="No activity yet"
-                                    description="Your recent transactions will appear here once you redeem a coupon."
-                                    actionLabel="Browse Coupons"
-                                    actionHref={route('coupons.index')}
-                                />
-                            </div>
-                        )}
-                    </div>
 
                     {/* Stamps */}
                     <div className="coupon-card overflow-hidden">
@@ -437,27 +348,6 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats, re
                         </div>
                     )}
 
-                    {/* Activity Log */}
-                    {activityLogs.length > 0 && (
-                        <div className="coupon-card p-5 sm:p-6">
-                            <h3 className="font-display text-lg text-gray-900 mb-4 flex items-center gap-2">
-                                <span className="text-xl">📋</span> Activity Log
-                            </h3>
-                            <ul className="space-y-2">
-                                {activityLogs.map(log => (
-                                    <li key={log.id} className="flex items-start gap-3 text-sm p-2.5 rounded-xl hover:bg-lucky-50/50 transition-colors">
-                                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-lucky-100 to-lucky-200 flex items-center justify-center text-lucky-600 text-xs font-bold">
-                                            {log.icon ?? '⚡'}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-900 text-sm">{log.description}</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">{log.created_at}</p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

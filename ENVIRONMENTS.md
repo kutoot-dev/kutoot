@@ -120,6 +120,9 @@ GST_RATE=18
 PLATFORM_FEE_TYPE=fixed
 PLAN_TAX_TYPE=exclusive
 PAYMENT_DEFAULT_GATEWAY=razorpay
+# use the simple keys below; old names like RAZORPAY_TEST_KEY_ID or
+# RAZORPAY_LIVE_KEY_ID are still read by the config until everyone has
+# moved over, but you should prefer the new variables.
 RAZORPAY_KEY_ID=rzp_live_XXXXX
 RAZORPAY_KEY_SECRET=your_live_secret
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret

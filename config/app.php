@@ -87,16 +87,15 @@ return [
     'plan_tax_type' => env('PLAN_TAX_TYPE', 'exclusive'),
 
     'razorpay' => [
-        'mode' => env('APP_ENV') === 'production' ? 'live' : 'test',
-        'key_id' => env('APP_ENV') === 'production'
-            ? env('RAZORPAY_LIVE_KEY_ID')
-            : env('RAZORPAY_TEST_KEY_ID'),
-        'key_secret' => env('APP_ENV') === 'production'
-            ? env('RAZORPAY_LIVE_KEY_SECRET')
-            : env('RAZORPAY_TEST_KEY_SECRET'),
-        'webhook_secret' => env('APP_ENV') === 'production'
-            ? env('RAZORPAY_LIVE_WEBHOOK_SECRET')
-            : env('RAZORPAY_TEST_WEBHOOK_SECRET'),
+        // Environment-specific keys are provided by the
+        // individual .env file for each environment. This
+        // gives teams full control and avoids branching logic
+        // based on APP_ENV. The chain of fallbacks ensures
+        // older env files using the legacy names continue to
+        // function until they are updated.
+        'key_id' => env('RAZORPAY_KEY_ID', env('RAZORPAY_LIVE_KEY_ID', env('RAZORPAY_TEST_KEY_ID'))),
+        'key_secret' => env('RAZORPAY_KEY_SECRET', env('RAZORPAY_LIVE_KEY_SECRET', env('RAZORPAY_TEST_KEY_SECRET'))),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET', env('RAZORPAY_LIVE_WEBHOOK_SECRET', env('RAZORPAY_TEST_WEBHOOK_SECRET'))),
     ],
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),

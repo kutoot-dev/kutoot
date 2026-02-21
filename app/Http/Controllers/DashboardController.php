@@ -7,7 +7,6 @@ use App\Services\ActivityLogHumanizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
@@ -34,24 +33,6 @@ class DashboardController extends Controller
             ? max(0, (float) $plan->max_redeemable_amount - $totalDiscountRedeemed)
             : 0;
 
-        $recentActivity = $user->transactions()
-            ->with(['coupon:id,title', 'merchantLocation:id,branch_name', 'couponRedemption', 'stamps'])
-            ->latest()
-            ->limit(15)
-            ->get()
-            ->map(fn ($t) => [
-                'id' => $t->id,
-                'coupon_title' => $t->coupon?->title,
-                'location_name' => $t->merchantLocation?->branch_name,
-                'original_bill_amount' => (float) ($t->original_bill_amount ?: $t->amount),
-                'discount_amount' => (float) ($t->couponRedemption?->discount_applied ?? $t->discount_amount ?? 0),
-                'platform_fee' => (float) ($t->couponRedemption?->platform_fee ?? 0),
-                'gst_amount' => (float) ($t->couponRedemption?->gst_amount ?? 0),
-                'total_paid' => (float) ($t->couponRedemption?->total_paid ?? $t->total_amount),
-                'stamps_earned' => $t->stamps->count(),
-                'payment_status' => $t->payment_status,
-                'created_at' => $t->created_at->diffForHumans(),
-            ]);
 
         $stamps = $user->stamps()
             ->with(['campaign:id,reward_name,code,stamp_slots,stamp_slot_min,stamp_slot_max', 'transaction:id,amount,original_bill_amount'])
@@ -74,19 +55,6 @@ class DashboardController extends Controller
                 ] : null,
             ]);
 
-        $activityLogs = Activity::causedBy($user)
-            ->with('subject')
-            ->latest()
-            ->limit(15)
-            ->get()
-            ->map(fn ($a) => [
-                'id' => $a->id,
-                'description' => $this->humanizer->humanize($a),
-                'subject_type' => class_basename($a->subject_type ?? ''),
-                'event' => $a->event,
-                'icon' => $this->humanizer->icon($a->event ?? 'updated'),
-                'created_at' => $a->created_at->diffForHumans(),
-            ]);
 
         return Inertia::render('Dashboard', [
             'user' => [
@@ -116,9 +84,7 @@ class DashboardController extends Controller
                 'remaining_bills' => $remainingBills,
                 'remaining_redeem_amount' => $remainingRedeemAmount,
             ],
-            'recentActivity' => $recentActivity,
             'stamps' => $stamps,
-            'activityLogs' => $activityLogs,
         ]);
     }
 }
