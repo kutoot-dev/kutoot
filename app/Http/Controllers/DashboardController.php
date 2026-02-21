@@ -3,17 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
-use App\Services\ActivityLogHumanizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __construct(
-        protected ActivityLogHumanizer $humanizer,
-    ) {}
-
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -32,29 +27,6 @@ class DashboardController extends Controller
         $remainingRedeemAmount = $plan
             ? max(0, (float) $plan->max_redeemable_amount - $totalDiscountRedeemed)
             : 0;
-
-
-        $stamps = $user->stamps()
-            ->with(['campaign:id,reward_name,code,stamp_slots,stamp_slot_min,stamp_slot_max', 'transaction:id,amount,original_bill_amount'])
-            ->latest()
-            ->limit(20)
-            ->get()
-            ->map(fn ($s) => [
-                'id' => $s->id,
-                'code' => $s->code,
-                'source' => $s->source->getLabel(),
-                'campaign_name' => $s->campaign?->reward_name,
-                'bill_amount' => (float) ($s->transaction?->original_bill_amount ?: $s->transaction?->amount ?? 0),
-                'created_at' => $s->created_at->diffForHumans(),
-                'editable_until' => $s->editable_until?->toISOString(),
-                'is_editable' => $s->isEditable(),
-                'stamp_config' => $s->campaign && $s->campaign->hasStampConfig() ? [
-                    'slots' => $s->campaign->stamp_slots,
-                    'min' => $s->campaign->stamp_slot_min,
-                    'max' => $s->campaign->stamp_slot_max,
-                ] : null,
-            ]);
-
 
         return Inertia::render('Dashboard', [
             'user' => [
@@ -84,7 +56,6 @@ class DashboardController extends Controller
                 'remaining_bills' => $remainingBills,
                 'remaining_redeem_amount' => $remainingRedeemAmount,
             ],
-            'stamps' => $stamps,
         ]);
     }
 }

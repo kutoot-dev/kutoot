@@ -11,6 +11,7 @@ use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -83,9 +84,59 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Campaign, $this>
      */
-    public function primaryCampaign(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function primaryCampaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'primary_campaign_id');
+    }
+
+    /**
+     * Campaigns the user has subscribed to.
+     *
+     * @return BelongsToMany<Campaign, $this>
+     */
+    public function campaigns(): BelongsToMany
+    {
+        return $this->belongsToMany(Campaign::class, 'campaign_user')
+            ->withPivot(['is_primary', 'subscribed_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get only the user's subscribed campaigns that are accessible under their current plan.
+     *
+     * @return BelongsToMany<Campaign, $this>
+     */
+    public function activeCampaigns(): BelongsToMany
+    {
+        return $this->campaigns()
+            ->where('is_active', true)
+            ->where('status', \App\Enums\CampaignStatus::Active);
+    }
+
+    /**
+     * Check whether the user is subscribed to a given campaign.
+     */
+    public function isSubscribedToCampaign(int $campaignId): bool
+    {
+        return $this->campaigns()->where('campaigns.id', $campaignId)->exists();
+    }
+
+    /**
+     * Get the IDs of campaigns accessible under the user's current plan.
+     *
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    public function accessibleCampaignIds(): \Illuminate\Support\Collection
+    {
+        $subscription = $this->effectiveSubscription();
+
+        if (! $subscription) {
+            return collect();
+        }
+
+        $plan = SubscriptionPlan::find($subscription->plan_id);
+
+        return $plan ? $plan->campaigns()->pluck('campaigns.id') : collect();
     }
 
     /**

@@ -143,9 +143,9 @@ class DummyDataSeeder extends Seeder
         $merchantUser->merchantLocations()->attach($pizzaDowntown);
 
         // 5. Create Categories
-        $foodCat = CampaignCategory::create(['name' => 'Food & Dining', 'slug' => 'food-dining']);
-        $retailCat = CampaignCategory::create(['name' => 'Retail', 'slug' => 'retail']);
-        $beverageCat = CampaignCategory::create(['name' => 'Beverages', 'slug' => 'beverages']);
+        $foodCat = CampaignCategory::firstOrCreate(['slug' => 'food-dining'], ['name' => 'Food & Dining']);
+        $retailCat = CampaignCategory::firstOrCreate(['slug' => 'retail'], ['name' => 'Retail']);
+        $beverageCat = CampaignCategory::firstOrCreate(['slug' => 'beverages'], ['name' => 'Beverages']);
 
         $couponCatFood = CouponCategory::create(['name' => 'Food', 'slug' => 'food', 'is_active' => true]);
         $couponCatBeverage = CouponCategory::create(['name' => 'Beverages', 'slug' => 'beverages', 'is_active' => true]);
@@ -159,6 +159,7 @@ class DummyDataSeeder extends Seeder
             [$diamondPlan, 'Free Coffee Month Pass', $beverageCat, 1200.00, 15, $coffeeStation, 28],
         ];
 
+        $goldCampaigns = [];
         foreach ($campaignData as [$plan, $rewardName, $category, $costTarget, $stampTarget, $location, $marketingBounty]) {
             $campaign = Campaign::create([
                 'category_id' => $category->id,
@@ -173,8 +174,37 @@ class DummyDataSeeder extends Seeder
                 'collected_commission_cache' => 0,
                 'issued_stamps_cache' => 0,
                 'marketing_bounty_percentage' => $marketingBounty,
+                'code' => strtoupper(substr(str_replace(' ', '', $rewardName), 0, 6)),
+                'stamp_slots' => 4,
+                'stamp_slot_min' => 1,
+                'stamp_slot_max' => 20,
+                'stamp_editable_on_plan_purchase' => true,
+                'stamp_editable_on_coupon_redemption' => false,
             ]);
             $campaign->plans()->attach($plan);
+
+            // Track campaigns accessible to Gold plan (Gold has access to Bronze, Silver, Gold campaigns)
+            if (in_array($plan->id, [$bronzePlan->id, $silverPlan->id, $goldPlan->id])) {
+                $goldCampaigns[] = $campaign;
+            }
+        }
+
+        // 6b. Subscribe user to campaigns accessible under their Gold plan
+        if (! empty($goldCampaigns)) {
+            $firstCampaign = $goldCampaigns[0];
+            $user->campaigns()->attach($firstCampaign->id, [
+                'is_primary' => true,
+                'subscribed_at' => now(),
+            ]);
+            $user->update(['primary_campaign_id' => $firstCampaign->id]);
+
+            // Subscribe to remaining Gold-accessible campaigns (non-primary)
+            foreach (array_slice($goldCampaigns, 1) as $campaign) {
+                $user->campaigns()->attach($campaign->id, [
+                    'is_primary' => false,
+                    'subscribed_at' => now(),
+                ]);
+            }
         }
 
         // 7. Create Coupons

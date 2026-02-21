@@ -121,7 +121,12 @@ function TransactionCard({ type, transaction: tx }) {
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-900">{tx.plan_name}</h3>
-                                <p className="text-xs text-gray-400">{tx.created_at}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-lucky-100 text-lucky-600">
+                                        ⭐ Plan Purchase
+                                    </span>
+                                    <span className="text-xs text-gray-400">{tx.created_at}</span>
+                                </div>
                             </div>
                         </div>
                         <StatusBadge status={tx.payment_status} />
@@ -168,8 +173,13 @@ function TransactionCard({ type, transaction: tx }) {
                         </div>
                         <div className="min-w-0">
                             <h3 className="font-bold text-gray-900 truncate">{tx.coupon_title}</h3>
-                            <p className="text-xs text-gray-500 truncate">📍 {tx.merchant_location}</p>
-                            <p className="text-xs text-gray-400">{tx.created_at}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-600">
+                                    🎟️ Coupon Redemption
+                                </span>
+                                <span className="text-xs text-gray-500 truncate">📍 {tx.merchant_location}</span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-0.5">{tx.created_at}</p>
                         </div>
                     </div>
                     <StatusBadge status={tx.payment_status} />

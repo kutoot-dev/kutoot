@@ -36,6 +36,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </NavLink>
                                 )}
                                 {user && (
+                                    <NavLink href={route('stamps.index')} active={route().current('stamps.*')}>
+                                        🎫 My Stamps
+                                    </NavLink>
+                                )}
+                                {user && (
                                     <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
                                         💳 Transactions
                                     </NavLink>
@@ -165,6 +170,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('dashboard')}
                             >
                                 🎯 Dashboard
+                            </ResponsiveNavLink>
+                        )}
+                        {user && (
+                            <ResponsiveNavLink
+                                href={route('stamps.index')}
+                                active={route().current('stamps.*')}
+                            >
+                                🎫 My Stamps
                             </ResponsiveNavLink>
                         )}
                         {user && (

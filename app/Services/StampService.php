@@ -248,11 +248,37 @@ class StampService
     protected function resolveCampaign(User $user, ?int $campaignId): ?Campaign
     {
         if ($campaignId) {
-            return Campaign::find($campaignId);
+            $campaign = Campaign::find($campaignId);
+
+            if (! $campaign) {
+                return null;
+            }
+
+            // Validate campaign is still active
+            if (! $campaign->is_active || $campaign->status !== \App\Enums\CampaignStatus::Active) {
+                return null;
+            }
+
+            // If user has campaign subscriptions, validate they are subscribed to this one
+            if ($user->campaigns()->exists() && ! $user->isSubscribedToCampaign($campaignId)) {
+                return null;
+            }
+
+            return $campaign;
         }
 
         if ($user->primary_campaign_id) {
-            return $user->primaryCampaign;
+            $campaign = $user->primaryCampaign;
+
+            if ($campaign && $campaign->is_active && $campaign->status === \App\Enums\CampaignStatus::Active) {
+                return $campaign;
+            }
+        }
+
+        // Fallback: try to find any subscribed active campaign
+        $subscribedCampaign = $user->activeCampaigns()->first();
+        if ($subscribedCampaign) {
+            return $subscribedCampaign;
         }
 
         return null;

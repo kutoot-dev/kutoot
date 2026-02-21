@@ -103,6 +103,18 @@ class Campaign extends Model
         return $this->hasMany(Stamp::class);
     }
 
+    /**
+     * Users who have subscribed to this campaign.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function subscribers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'campaign_user')
+            ->withPivot(['is_primary', 'subscribed_at'])
+            ->withTimestamps();
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', CampaignStatus::Active);

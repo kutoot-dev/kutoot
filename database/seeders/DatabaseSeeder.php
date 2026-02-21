@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             BasePlanSeeder::class,
             SuperAdminSeeder::class,
             DummyDataSeeder::class,
+            CampaignSeeder::class,
             QrCodeSeeder::class,
         ]);
     }

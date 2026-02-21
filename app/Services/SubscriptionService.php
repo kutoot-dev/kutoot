@@ -14,11 +14,13 @@ class SubscriptionService
 {
     public function __construct(
         protected StampService $stampService,
+        protected CampaignSubscriptionService $campaignSubscriptionService,
     ) {}
 
     /**
      * Upgrade (or purchase) a plan for the user.
      * Expires existing active subscriptions and creates a new one.
+     * Reconciles campaign subscriptions and auto-subscribes to new campaigns.
      * If a paid transaction is provided (from Razorpay checkout), use it instead of creating a new one.
      */
     public function upgradePlan(User $user, int $planId, ?Transaction $paidTransaction = null): UserSubscription
@@ -56,23 +58,23 @@ class SubscriptionService
             ]);
         }
 
-        if ($plan && $plan->stamps_on_purchase > 0 && $user->primary_campaign_id) {
-            $this->stampService->awardStampsForPlanPurchase($user, $plan, transaction: $transaction);
+        // Reconcile campaign subscriptions for the new plan
+        if ($plan) {
+            $this->campaignSubscriptionService->reconcileAfterPlanChange($user, $plan);
+            $this->campaignSubscriptionService->autoSubscribeForPlan($user, $plan);
+            $user->refresh();
         }
 
-        // If current primary campaign is not in the new plan, clear it
-        if ($user->primary_campaign_id && $plan) {
-            $campaignInPlan = $plan->campaigns()->where('campaigns.id', $user->primary_campaign_id)->exists();
-            if (! $campaignInPlan) {
-                $user->update(['primary_campaign_id' => null]);
-            }
+        if ($plan && $plan->stamps_on_purchase > 0 && $user->primary_campaign_id) {
+            $this->stampService->awardStampsForPlanPurchase($user, $plan, transaction: $transaction);
         }
 
         return $subscription;
     }
 
     /**
-     * Set the user's primary campaign (must be accessible from their current plan).
+     * Set the user's primary campaign (must be subscribed and accessible from their current plan).
+     * Auto-subscribes the user if not already subscribed.
      */
     public function setPrimaryCampaign(User $user, int $campaignId): bool
     {
@@ -95,7 +97,13 @@ class SubscriptionService
             return false;
         }
 
-        $user->update(['primary_campaign_id' => $campaignId]);
+        // Auto-subscribe if not already subscribed
+        if (! $user->isSubscribedToCampaign($campaignId)) {
+            $this->campaignSubscriptionService->subscribe($user, $campaignId);
+        }
+
+        // Set as primary
+        $this->campaignSubscriptionService->setPrimary($user, $campaignId);
 
         // Award plan purchase stamps if this is a first-time campaign selection after plan purchase
         // and stamps haven't been awarded yet
@@ -154,13 +162,8 @@ class SubscriptionService
             'expires_at' => null,
         ]);
 
-        // If current primary campaign is not in the base plan, clear it
-        if ($user->primary_campaign_id) {
-            $campaignInPlan = $basePlan->campaigns()->where('campaigns.id', $user->primary_campaign_id)->exists();
-            if (! $campaignInPlan) {
-                $user->update(['primary_campaign_id' => null]);
-            }
-        }
+        // Reconcile campaign subscriptions for the base plan
+        $this->campaignSubscriptionService->reconcileAfterPlanChange($user, $basePlan);
 
         return $subscription;
     }
