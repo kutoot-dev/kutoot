@@ -29,6 +29,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                         🎯 Dashboard
                                     </NavLink>
                                 )}
+                                {user && (
+                                    <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                        💳 Transactions
+                                    </NavLink>
+                                )}
                                 <NavLink href={route('campaigns.index')} active={route().current('campaigns.*')}>
                                     🏆 Campaigns
                                 </NavLink>
@@ -156,6 +161,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 active={route().current('dashboard')}
                             >
                                 🎯 Dashboard
+                            </ResponsiveNavLink>
+                        )}
+                        {user && (
+                            <ResponsiveNavLink
+                                href={route('transactions.index')}
+                                active={route().current('transactions.*')}
+                            >
+                                💳 Transactions
                             </ResponsiveNavLink>
                         )}
                         <ResponsiveNavLink

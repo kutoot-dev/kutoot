@@ -102,6 +102,7 @@ class OtpService
 
     /**
      * Send OTP via the appropriate channel.
+     * In production, sends real SMS or email. In non-production, logs OTP for testing.
      */
     public function sendOtp(?User $user, string $otp, string $channel = 'email', ?string $identifier = null): void
     {
@@ -115,7 +116,13 @@ class OtpService
             };
         }
 
+        // Log OTP for all environments
         Log::info("OTP for {$channel} [{$target}]: {$otp}");
+
+        // Only send real SMS/email in production
+        if (! app()->isProduction()) {
+            return;
+        }
 
         if ($channel === 'email' && $target && filter_var($target, FILTER_VALIDATE_EMAIL)) {
             Mail::to($target)->send(new OtpMail($otp));

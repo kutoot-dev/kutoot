@@ -10,6 +10,7 @@ Route::get('/subscriptions', [\App\Http\Controllers\SubscriptionController::clas
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
 
     Route::post('/coupons/{coupon}/redeem', [\App\Http\Controllers\CouponController::class, 'redeem'])->name('coupons.redeem');
     Route::post('/coupons/transactions/{transaction}/verify', [\App\Http\Controllers\CouponController::class, 'verifyPayment'])->name('coupons.verify-payment');
