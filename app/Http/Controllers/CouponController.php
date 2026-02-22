@@ -33,11 +33,30 @@ class CouponController extends Controller
         $plan = $user?->activeSubscription?->plan;
 
         $coupons = DiscountCoupon::query()
-            ->when($planId, fn ($q) => $q->forPlan($planId))
             ->active()
-            ->with(['merchantLocation.merchant', 'category'])
+            ->with(['merchantLocation.merchant', 'category.subscriptionPlans'])
             ->latest()
-            ->paginate(9);
+            ->paginate(12);
+
+        // Add eligibility info to each coupon
+        $coupons->through(function (DiscountCoupon $coupon) use ($planId) {
+            $data = $coupon->toArray();
+            $data['is_eligible'] = $planId ? $coupon->isEligibleForPlan($planId) : false;
+
+            if (! $data['is_eligible']) {
+                $cheapestPlan = $coupon->category?->subscriptionPlans()
+                    ->orderBy('price', 'asc')
+                    ->first();
+                $data['required_plan'] = $cheapestPlan ? [
+                    'name' => $cheapestPlan->name,
+                    'price' => (float) $cheapestPlan->price,
+                ] : null;
+            } else {
+                $data['required_plan'] = null;
+            }
+
+            return $data;
+        });
 
         $locations = MerchantLocation::with('merchant')->get()->map(fn ($loc) => [
             'id' => $loc->id,
@@ -113,11 +132,11 @@ class CouponController extends Controller
                 $grandTotal = $finalBillAfterDiscount + $platformFee + $gstAmount;
 
                 // Edge case: discount must not reduce bill below platform fee + GST
-                if ($finalBillAfterDiscount > 0 && $finalBillAfterDiscount < ($platformFee + $gstAmount)) {
-                    throw new \InvalidArgumentException(
-                        'Discount reduces the bill below the minimum required for platform fee and GST.'
-                    );
-                }
+                // if ($finalBillAfterDiscount > 0 && $finalBillAfterDiscount < ($platformFee + $gstAmount)) {
+                //     throw new \InvalidArgumentException(
+                //         'Discount reduces the bill below the minimum required for platform fee and GST.'
+                //     );
+                // }
 
                 // 3. Calculate commission for the merchant location
                 $commissionAmount = ($finalBillAfterDiscount * $merchantLocation->commission_percentage) / 100;

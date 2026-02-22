@@ -186,8 +186,18 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                     {/* Coupon Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {coupons.data.length > 0 ? (
-                            coupons.data.map((coupon) => (
-                                <div key={coupon.id} className="coupon-card overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                            coupons.data.map((coupon) => {
+                                const isEligible = coupon.is_eligible !== false;
+
+                                return (
+                                <div key={coupon.id} className={`coupon-card overflow-hidden flex flex-col transition-all duration-300 transform hover:-translate-y-1 group relative ${isEligible ? 'hover:shadow-xl' : 'opacity-80 grayscale-[20%]'}`}>
+                                    {/* Locked overlay badge */}
+                                    {!isEligible && (
+                                        <div className="absolute top-3 left-3 z-10 bg-gray-800/80 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                            🔒 Locked
+                                        </div>
+                                    )}
+
                                     <div className="p-5 sm:p-6 flex-grow">
                                         {/* Merchant badge */}
                                         <div className="flex items-center justify-between mb-3">
@@ -243,7 +253,14 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
 
                                     {/* Action */}
                                     <div className="bg-gradient-to-br from-lucky-50 to-ticket-50 px-5 py-3 sm:px-6 sm:py-4">
-                                        {auth.user ? (
+                                        {!isEligible ? (
+                                            <Link
+                                                href={route('subscriptions.index')}
+                                                className="inline-flex items-center w-full justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-700 to-gray-800 border border-transparent rounded-full font-bold text-xs text-white uppercase tracking-widest hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                                            >
+                                                🚀 Upgrade to {coupon.required_plan?.name || 'Unlock'}
+                                            </Link>
+                                        ) : auth.user ? (
                                             <PrimaryButton className="w-full justify-center" onClick={() => confirmRedemption(coupon)}>
                                                 🎟️ Redeem Now
                                             </PrimaryButton>
@@ -257,7 +274,8 @@ export default function Index({ auth, coupons, locations, planName, stampsPerHun
                                         )}
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="col-span-full">
                                 <div className="coupon-card">

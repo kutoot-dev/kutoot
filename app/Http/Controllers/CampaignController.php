@@ -14,17 +14,16 @@ class CampaignController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $planId = $user?->activeSubscription?->plan_id;
+        $accessibleCampaignIds = $user ? $user->accessibleCampaignIds() : collect();
 
         $campaigns = Campaign::query()
-            ->when($planId, fn ($q) => $q->forPlan($planId))
             ->active()
-            ->with(['category', 'creator.merchantLocations.merchant'])
+            ->with(['category', 'creator.merchantLocations.merchant', 'plans'])
             ->latest()
-            ->paginate(9);
+            ->paginate(12);
 
-        // Transform to include merchant info and bounty percentage
-        $campaigns->through(function (Campaign $campaign) {
+        // Transform to include merchant info, bounty percentage, and eligibility
+        $campaigns->through(function (Campaign $campaign) use ($accessibleCampaignIds) {
             $merchant = $campaign->creator?->merchant;
             $data = $campaign->toArray();
             $data['creator'] = array_merge($campaign->creator?->toArray() ?? [], [
@@ -34,6 +33,19 @@ class CampaignController extends Controller
                 ] : null,
             ]);
             $data['bounty_percentage'] = $this->bountyService->effectiveBountyPercentage($campaign);
+            $data['is_eligible'] = $accessibleCampaignIds->contains($campaign->id);
+
+            if (! $data['is_eligible']) {
+                $cheapestPlan = $campaign->plans()->orderBy('price', 'asc')->first();
+                $data['required_plan'] = $cheapestPlan ? [
+                    'name' => $cheapestPlan->name,
+                    'price' => (float) $cheapestPlan->price,
+                ] : null;
+            } else {
+                $data['required_plan'] = null;
+            }
+
+            unset($data['plans']);
 
             return $data;
         });

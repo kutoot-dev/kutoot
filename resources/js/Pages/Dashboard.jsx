@@ -1,10 +1,20 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import CurrencySymbol from '@/Components/CurrencySymbol';
 import EmptyState from '@/Components/EmptyState';
+import { useState } from 'react';
 
-export default function Dashboard({ auth, user, plan, primaryCampaign, stats }) {
+export default function Dashboard({ auth, user, plan, primaryCampaign, eligibleCampaigns = [], stats }) {
     const allStatsZero = stats.stamps_count === 0 && stats.total_coupons_used === 0 && stats.total_discount_redeemed === 0;
+    const [changingCampaign, setChangingCampaign] = useState(false);
+
+    const handleCampaignChange = (campaignId) => {
+        if (!campaignId || campaignId === primaryCampaign?.id) return;
+        setChangingCampaign(true);
+        router.post(route('subscriptions.setPrimaryCampaign'), { campaign_id: campaignId }, {
+            onFinish: () => setChangingCampaign(false),
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -34,7 +44,7 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats }) 
                                 <ProfileRow icon="📧" label="Email" value={user.email} />
                                 <ProfileRow icon="📅" label="Member Since" value={user.created_at} />
                                 {primaryCampaign && (
-                                    <ProfileRow icon="🏆" label="Campaign" value={primaryCampaign} valueClass="text-lucky-600" last />
+                                    <ProfileRow icon="🏆" label="Campaign" value={primaryCampaign.reward_name} valueClass="text-lucky-600" last />
                                 )}
                             </dl>
                         </div>
@@ -121,6 +131,64 @@ export default function Dashboard({ auth, user, plan, primaryCampaign, stats }) 
                             <StatCard label="Discount Saved" value={<><CurrencySymbol />{stats.total_discount_redeemed.toFixed(0)}</>} icon="💰" color="emerald" />
                             <StatCard label="Bills Left" value={stats.remaining_bills} icon="📋" color="amber" />
                             <StatCard label="Redeem Left" value={<><CurrencySymbol />{stats.remaining_redeem_amount.toFixed(0)}</>} icon="🎁" color="rose" />
+                        </div>
+                    )}
+
+                    {/* Campaign Selection */}
+                    {eligibleCampaigns.length > 0 && (
+                        <div className="coupon-card p-5 sm:p-6">
+                            <h3 className="font-display text-lg text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="text-2xl">🎯</span> Your Campaign
+                            </h3>
+
+                            {primaryCampaign ? (
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lucky-100 to-lucky-200 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-lg">🏆</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-bold text-gray-900 truncate">{primaryCampaign.reward_name}</p>
+                                            <p className="text-xs text-gray-500">Stamps are assigned to this campaign</p>
+                                        </div>
+                                    </div>
+
+                                    {eligibleCampaigns.length > 1 && (
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                value={primaryCampaign.id}
+                                                onChange={(e) => handleCampaignChange(Number(e.target.value))}
+                                                disabled={changingCampaign}
+                                                className="block w-full sm:w-auto border-lucky-200 focus:border-lucky-500 focus:ring-lucky-500 rounded-xl shadow-sm text-sm disabled:opacity-50"
+                                            >
+                                                {eligibleCampaigns.map(c => (
+                                                    <option key={c.id} value={c.id}>{c.reward_name}</option>
+                                                ))}
+                                            </select>
+                                            {changingCampaign && (
+                                                <svg className="animate-spin h-4 w-4 text-lucky-500" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                                    <p className="text-sm text-amber-800 font-medium mb-3">
+                                        ⚠️ No campaign selected! Select a campaign to start earning stamps.
+                                    </p>
+                                    <select
+                                        value=""
+                                        onChange={(e) => handleCampaignChange(Number(e.target.value))}
+                                        disabled={changingCampaign}
+                                        className="block w-full border-amber-300 focus:border-lucky-500 focus:ring-lucky-500 rounded-xl shadow-sm text-sm disabled:opacity-50"
+                                    >
+                                        <option value="">Choose a campaign...</option>
+                                        {eligibleCampaigns.map(c => (
+                                            <option key={c.id} value={c.id}>{c.reward_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     )}
 

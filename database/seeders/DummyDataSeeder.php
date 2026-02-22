@@ -150,17 +150,29 @@ class DummyDataSeeder extends Seeder
         $couponCatFood = CouponCategory::create(['name' => 'Food', 'slug' => 'food', 'is_active' => true]);
         $couponCatBeverage = CouponCategory::create(['name' => 'Beverages', 'slug' => 'beverages', 'is_active' => true]);
 
-        // 6. Create one Campaign per Plan
+        // 6. Create 2 Campaigns per Plan (with progressive plan access)
+        // Each campaign is accessible to its tier and all higher tiers.
+        // [minPlanIndex, rewardName, category, costTarget, stampTarget, location, marketingBounty]
         $campaignData = [
-            [$bronzePlan, 'Free Snack Box', $foodCat, 200.00, 5, $pizzaDowntown, 35],
-            [$silverPlan, 'Free Medium Pizza', $foodCat, 400.00, 8, $pizzaDowntown, 22],
-            [$goldPlan, 'Free Large Pizza', $foodCat, 500.00, 10, $pizzaDowntown, 15],
-            [$platinumPlan, 'Free Banana Hamper', $retailCat, 800.00, 12, $bananaMall, 40],
-            [$diamondPlan, 'Free Coffee Month Pass', $beverageCat, 1200.00, 15, $coffeeStation, 28],
+            // Bronze tier (index 0) — 2 campaigns
+            [0, 'Free Snack Box', $foodCat, 200.00, 5, $pizzaDowntown, 35],
+            [0, 'Free Garlic Bread', $foodCat, 150.00, 4, $pizzaDowntown, 20],
+            // Silver tier (index 1) — 2 campaigns
+            [1, 'Free Medium Pizza', $foodCat, 400.00, 8, $pizzaDowntown, 22],
+            [1, 'Free Burger Meal', $foodCat, 350.00, 7, $pizzaDowntown, 25],
+            // Gold tier (index 2) — 2 campaigns
+            [2, 'Free Large Pizza', $foodCat, 500.00, 10, $pizzaDowntown, 15],
+            [2, 'Free Smoothie Combo', $beverageCat, 450.00, 9, $coffeeStation, 18],
+            // Platinum tier (index 3) — 2 campaigns
+            [3, 'Free Banana Hamper', $retailCat, 800.00, 12, $bananaMall, 40],
+            [3, 'Free Gourmet Dinner', $foodCat, 900.00, 14, $pizzaDowntown, 32],
+            // Diamond tier (index 4) — 2 campaigns
+            [4, 'Free Coffee Month Pass', $beverageCat, 1200.00, 15, $coffeeStation, 28],
+            [4, 'Free Weekend Brunch', $foodCat, 1500.00, 18, $pizzaDowntown, 38],
         ];
 
         $goldCampaigns = [];
-        foreach ($campaignData as [$plan, $rewardName, $category, $costTarget, $stampTarget, $location, $marketingBounty]) {
+        foreach ($campaignData as [$minPlanIndex, $rewardName, $category, $costTarget, $stampTarget, $location, $marketingBounty]) {
             $campaign = Campaign::create([
                 'category_id' => $category->id,
                 'creator_type' => CreatorType::Admin,
@@ -181,10 +193,13 @@ class DummyDataSeeder extends Seeder
                 'stamp_editable_on_plan_purchase' => true,
                 'stamp_editable_on_coupon_redemption' => false,
             ]);
-            $campaign->plans()->attach($plan);
 
-            // Track campaigns accessible to Gold plan (Gold has access to Bronze, Silver, Gold campaigns)
-            if (in_array($plan->id, [$bronzePlan->id, $silverPlan->id, $goldPlan->id])) {
+            // Progressive access: attach to this plan and all higher plans
+            $eligiblePlanIds = collect($allPlans)->slice($minPlanIndex)->pluck('id');
+            $campaign->plans()->attach($eligiblePlanIds);
+
+            // Track campaigns accessible to Gold plan (index 2 and below)
+            if ($minPlanIndex <= 2) {
                 $goldCampaigns[] = $campaign;
             }
         }

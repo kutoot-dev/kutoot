@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,6 +29,18 @@ class DashboardController extends Controller
             ? max(0, (float) $plan->max_redeemable_amount - $totalDiscountRedeemed)
             : 0;
 
+        // Campaigns the user is eligible for under their current plan
+        $eligibleCampaigns = $plan
+            ? $plan->campaigns()
+                ->where('is_active', true)
+                ->where('status', 'active')
+                ->get(['campaigns.id', 'reward_name', 'category_id'])
+                ->map(fn (Campaign $c) => [
+                    'id' => $c->id,
+                    'reward_name' => $c->reward_name,
+                ])
+            : collect();
+
         return Inertia::render('Dashboard', [
             'user' => [
                 'name' => $user->name,
@@ -48,7 +61,11 @@ class DashboardController extends Controller
                     ? (int) max(0, now()->diffInDays($subscription->expires_at, false))
                     : null,
             ] : null,
-            'primaryCampaign' => $user->primaryCampaign?->reward_name,
+            'primaryCampaign' => $user->primaryCampaign ? [
+                'id' => $user->primaryCampaign->id,
+                'reward_name' => $user->primaryCampaign->reward_name,
+            ] : null,
+            'eligibleCampaigns' => $eligibleCampaigns,
             'stats' => [
                 'stamps_count' => $stampsCount,
                 'total_coupons_used' => $totalCouponsUsed,
