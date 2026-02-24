@@ -3,6 +3,10 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/debug-error', function () {
+    abort(500, 'This is a test error to show the error page.');
+});
+
 Route::get('/', [\App\Http\Controllers\CampaignController::class, 'index'])->name('campaigns.index');
 Route::get('/campaigns/{campaign}', [\App\Http\Controllers\CampaignController::class, 'show'])->name('campaigns.show');
 Route::get('/coupons', [\App\Http\Controllers\CouponController::class, 'index'])->name('coupons.index');

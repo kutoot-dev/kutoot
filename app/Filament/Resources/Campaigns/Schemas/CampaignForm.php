@@ -52,11 +52,9 @@ class CampaignForm
                     ->required()
                     ->numeric(),
                 TextInput::make('collected_commission_cache')
-                    ->required()
                     ->numeric()
                     ->default(0.0),
                 TextInput::make('issued_stamps_cache')
-                    ->required()
                     ->numeric()
                     ->default(0),
                 TextInput::make('marketing_bounty_percentage')
