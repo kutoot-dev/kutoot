@@ -64,6 +64,13 @@ class CampaignForm
                     ->default(0)
                     ->minValue(0)
                     ->maxValue(100),
+                Toggle::make('is_active')
+                    ->label('Active')
+                    ->helperText('Whether this campaign is currently active.')
+                    ->default(true),
+                Toggle::make('is_premium')
+                    ->label('Premium Campaign')
+                    ->helperText('Premium campaigns are shown in the homepage banner slideshow.'),
                 DateTimePicker::make('winner_announcement_date'),
                 CheckboxList::make('plans')
                     ->relationship('plans', 'name')

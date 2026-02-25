@@ -16,6 +16,13 @@ class SubscriptionPlanForm
             ->components([
                 TextInput::make('name')
                     ->required(),
+                TextInput::make('sort_order')
+                    ->label('Display Order')
+                    ->helperText('Controls the display order of plans. Lower numbers appear first. Also determines upgrade eligibility.')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0),
                 TextInput::make('price')
                     ->label('Price (₹)')
                     ->helperText('The price users pay to purchase this plan. Set to 0 for free/default plans.')

@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpgradePlanRequest;
 use App\Http\Requests\VerifyPaymentRequest;
+use App\Http\Resources\StampResource;
 use App\Http\Resources\SubscriptionPlanResource;
 use App\Http\Resources\TransactionResource;
 use App\Http\Resources\UserSubscriptionResource;
@@ -40,6 +41,7 @@ class SubscriptionController extends Controller
     {
         $plans = SubscriptionPlan::query()
             ->with(['campaigns', 'couponCategories:id,name,icon'])
+            ->ordered()
             ->get();
 
         return SubscriptionPlanResource::collection($plans);
@@ -105,10 +107,21 @@ class SubscriptionController extends Controller
         if ($planPrice <= 0) {
             $this->subscriptionService->upgradePlan($user, $plan->id);
 
+            // Gather stamps awarded for this plan purchase
+            $stamps = $user->stamps()
+                ->where('source', 'plan_purchase')
+                ->whereHas('transaction', fn ($q) => $q->where('payment_id', 'like', 'PLAN-'.$plan->id.'-%'))
+                ->with('campaign')
+                ->latest()
+                ->take($plan->stamps_on_purchase)
+                ->get();
+
             return response()->json([
                 'message' => "Upgraded to {$plan->name} successfully!",
                 'requires_payment' => false,
                 'needs_campaign_selection' => ! $user->fresh()->primary_campaign_id,
+                'stamps_awarded' => $stamps->count(),
+                'stamps' => StampResource::collection($stamps),
             ]);
         }
 
@@ -182,10 +195,15 @@ class SubscriptionController extends Controller
 
         $this->subscriptionService->upgradePlan($user, $plan->id, $transaction);
 
+        // Gather stamps awarded for this transaction
+        $stamps = $transaction->fresh()->stamps()->with('campaign')->get();
+
         return response()->json([
             'message' => "Payment verified! Upgraded to {$plan->name}.",
             'transaction' => new TransactionResource($transaction->fresh()->load('stamps')),
             'needs_campaign_selection' => ! $user->fresh()->primary_campaign_id,
+            'stamps_awarded' => $stamps->count(),
+            'stamps' => StampResource::collection($stamps),
         ]);
     }
 

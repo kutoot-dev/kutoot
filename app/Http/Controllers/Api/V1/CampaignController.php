@@ -37,6 +37,7 @@ class CampaignController extends Controller
         $campaigns = Campaign::query()
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status), fn ($q) => $q->active())
             ->when($request->input('category_id'), fn ($q, $catId) => $q->where('category_id', $catId))
+            ->when($request->boolean('premium'), fn ($q) => $q->premium())
             ->with(['category', 'media'])
             ->latest()
             ->paginate(min((int) $request->input('per_page', 12), 50));

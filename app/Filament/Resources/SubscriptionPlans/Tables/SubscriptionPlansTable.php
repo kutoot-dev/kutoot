@@ -14,9 +14,13 @@ class SubscriptionPlansTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
+                TextColumn::make('sort_order')
+                    ->label('Order')
+                    ->sortable(),
                 TextColumn::make('price')
                     ->money('INR')
                     ->sortable(),

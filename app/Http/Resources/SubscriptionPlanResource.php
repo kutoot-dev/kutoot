@@ -18,6 +18,7 @@ class SubscriptionPlanResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'sort_order' => $this->sort_order,
             'price' => (float) $this->price,
             'is_default' => $this->is_default,
             'stamps_on_purchase' => $this->stamps_on_purchase,

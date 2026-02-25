@@ -43,6 +43,7 @@ class Campaign extends Model implements HasMedia
         'marketing_bounty_percentage',
         'winner_announcement_date',
         'is_active',
+        'is_premium',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -72,6 +73,7 @@ class Campaign extends Model implements HasMedia
             'stamp_slot_max' => 'integer',
             'stamp_editable_on_plan_purchase' => 'boolean',
             'stamp_editable_on_coupon_redemption' => 'boolean',
+            'is_premium' => 'boolean',
         ];
     }
 
@@ -127,6 +129,11 @@ class Campaign extends Model implements HasMedia
     public function scopeForPlan(Builder $query, int $planId): Builder
     {
         return $query->whereHas('plans', fn (Builder $q) => $q->where('plan_id', $planId));
+    }
+
+    public function scopePremium(Builder $query): Builder
+    {
+        return $query->where('is_premium', true);
     }
 
     /**

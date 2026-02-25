@@ -41,6 +41,10 @@ class CampaignResource extends JsonResource
             'issued_stamps_cache' => $this->issued_stamps_cache,
             'winner_announcement_date' => $this->winner_announcement_date?->toISOString(),
             'is_active' => $this->is_active,
+            'is_premium' => $this->is_premium,
+            'bounty_percentage' => $this->whenHas('bounty_percentage'),
+            'is_eligible' => $this->whenHas('is_eligible'),
+            'required_plan' => $this->whenHas('required_plan'),
             'media' => $this->whenLoaded('media', fn () => $this->getMedia('media')->map(fn ($m) => [
                 'id' => $m->id,
                 'url' => $m->getUrl(),
