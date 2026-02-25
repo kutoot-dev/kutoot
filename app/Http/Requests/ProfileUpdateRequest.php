@@ -15,6 +15,8 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $worldConnection = config('world.connection');
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -34,9 +36,9 @@ class ProfileUpdateRequest extends FormRequest
                 'required_without:email',
             ],
             'gender' => ['nullable', 'in:male,female,other'],
-            'country' => ['nullable', 'string', 'max:255'],
-            'state' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.countries", 'id')],
+            'state_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.states", 'id')],
+            'city_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.cities", 'id')],
             'pin_code' => ['nullable', 'string', 'max:20'],
             'full_address' => ['nullable', 'string', 'max:1000'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],

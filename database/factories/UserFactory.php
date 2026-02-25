@@ -32,9 +32,9 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'primary_campaign_id' => null,
             'gender' => fake()->optional()->randomElement(['male', 'female', 'other']),
-            'country' => fake()->optional()->country(),
-            'state' => fake()->optional()->state(),
-            'city' => fake()->optional()->city(),
+            'country_id' => null,
+            'state_id' => null,
+            'city_id' => null,
             'pin_code' => fake()->optional()->postcode(),
             'full_address' => fake()->optional()->address(),
         ];

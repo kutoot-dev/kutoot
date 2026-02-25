@@ -17,6 +17,8 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $worldConnection = config('world.connection');
+
         return [
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user')), 'required_without:mobile'],
@@ -25,9 +27,9 @@ class UpdateUserRequest extends FormRequest
             'email_verified_at' => ['nullable', 'date'],
             'primary_campaign_id' => ['nullable', 'exists:campaigns,id'],
             'gender' => ['nullable', 'in:male,female,other'],
-            'country' => ['nullable', 'string', 'max:255'],
-            'state' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.countries", 'id')],
+            'state_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.states", 'id')],
+            'city_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.cities", 'id')],
             'pin_code' => ['nullable', 'string', 'max:20'],
             'full_address' => ['nullable', 'string', 'max:1000'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],

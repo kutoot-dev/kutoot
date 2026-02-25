@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -16,6 +17,8 @@ class StoreUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $worldConnection = config('world.connection');
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email', 'required_without:mobile'],
@@ -24,9 +27,9 @@ class StoreUserRequest extends FormRequest
             'email_verified_at' => ['nullable', 'date'],
             'primary_campaign_id' => ['nullable', 'exists:campaigns,id'],
             'gender' => ['nullable', 'in:male,female,other'],
-            'country' => ['nullable', 'string', 'max:255'],
-            'state' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.countries", 'id')],
+            'state_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.states", 'id')],
+            'city_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.cities", 'id')],
             'pin_code' => ['nullable', 'string', 'max:20'],
             'full_address' => ['nullable', 'string', 'max:1000'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],

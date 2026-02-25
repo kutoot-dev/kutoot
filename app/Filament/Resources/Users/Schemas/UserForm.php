@@ -7,7 +7,11 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Nnjeim\World\Models\City;
+use Nnjeim\World\Models\Country;
+use Nnjeim\World\Models\State;
 
 class UserForm
 {
@@ -39,9 +43,29 @@ class UserForm
                         'other' => 'Other',
                     ])
                     ->nullable(),
-                TextInput::make('country'),
-                TextInput::make('state'),
-                TextInput::make('city'),
+                Select::make('country_id')
+                    ->label('Country')
+                    ->options(fn () => Country::orderBy('name')->pluck('name', 'id')->toArray())
+                    ->searchable()
+                    ->nullable()
+                    ->live()
+                    ->afterStateUpdated(fn ($set) => $set('state_id', null) ?? $set('city_id', null)),
+                Select::make('state_id')
+                    ->label('State')
+                    ->options(fn (Get $get) => $get('country_id')
+                        ? State::where('country_id', $get('country_id'))->orderBy('name')->pluck('name', 'id')->toArray()
+                        : [])
+                    ->searchable()
+                    ->nullable()
+                    ->live()
+                    ->afterStateUpdated(fn ($set) => $set('city_id', null)),
+                Select::make('city_id')
+                    ->label('City')
+                    ->options(fn (Get $get) => $get('state_id')
+                        ? City::where('state_id', $get('state_id'))->orderBy('name')->pluck('name', 'id')->toArray()
+                        : [])
+                    ->searchable()
+                    ->nullable(),
                 TextInput::make('pin_code')->label('Pin code'),
                 Textarea::make('full_address')->label('Full address'),
                 FileUpload::make('profile_picture')

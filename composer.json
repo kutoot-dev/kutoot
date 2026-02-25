@@ -22,6 +22,7 @@
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "*",
         "nativephp/mobile": "^3.0",
+        "nnjeim/world": "^1.1",
         "opcodesio/log-viewer": "^3.21",
         "razorpay/razorpay": "2.*",
         "spatie/laravel-activitylog": "^4.11",

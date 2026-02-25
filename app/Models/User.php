@@ -19,6 +19,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
+use Nnjeim\World\Models\City;
+use Nnjeim\World\Models\Country;
+use Nnjeim\World\Models\State;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -55,9 +58,9 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         'otp_expires_at',
         'has_email_authentication',
         'gender',
-        'country',
-        'state',
-        'city',
+        'country_id',
+        'state_id',
+        'city_id',
         'pin_code',
         'full_address',
     ];
@@ -105,6 +108,30 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
     public function primaryCampaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class, 'primary_campaign_id');
+    }
+
+    /**
+     * @return BelongsTo<Country, $this>
+     */
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * @return BelongsTo<State, $this>
+     */
+    public function state(): BelongsTo
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    /**
+     * @return BelongsTo<City, $this>
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 
     /**

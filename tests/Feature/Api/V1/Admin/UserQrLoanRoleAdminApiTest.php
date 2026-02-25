@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
+use Nnjeim\World\Models\City;
 use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
@@ -31,13 +32,14 @@ it('lists users as admin', function () {
 it('creates a user as admin', function () {
     Sanctum::actingAs($this->admin);
 
+    $city = City::first();
     $file = UploadedFile::fake()->image('avatar.jpg');
     $this->postJson('/api/v1/admin/users', [
         'name' => 'New User',
         'email' => 'newuser@example.com',
         'password' => 'password123',
         'gender' => 'male',
-        'city' => 'Test City',
+        'city_id' => $city->id,
         'profile_picture' => $file,
     ])->assertCreated()
         ->assertJsonPath('data.name', 'New User');

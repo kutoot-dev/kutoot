@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\V1\StampController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use Illuminate\Support\Facades\Route;
+use Nnjeim\World\Http\Controllers\City\CityController;
+use Nnjeim\World\Http\Controllers\Country\CountryController;
+use Nnjeim\World\Http\Controllers\State\StateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +24,14 @@ use Illuminate\Support\Facades\Route;
 | middleware group. Sanctum token-based auth is used for protected routes.
 |
 */
+
+// ── World reference data (public, no auth) ─────────────────────────────
+Route::get('/countries', [CountryController::class, 'index'])
+    ->name('api.v1.countries.index');
+Route::get('/states', [StateController::class, 'index'])
+    ->name('api.v1.states.index');
+Route::get('/cities', [CityController::class, 'index'])
+    ->name('api.v1.cities.index');
 
 // ── Authentication (public) ─────────────────────────────────────────────
 Route::prefix('auth')->group(function () {

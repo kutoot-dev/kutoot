@@ -63,6 +63,24 @@ return [
             ]) : [],
         ],
 
+        // Dedicated connection for the nnjeim/world reference data (countries, states, cities).
+        // Using its own env vars so RefreshDatabase on sqlite does not affect it.
+        'world_mysql' => [
+            'driver' => 'mysql',
+            'host' => env('WORLD_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('WORLD_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('WORLD_DB_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('WORLD_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('WORLD_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

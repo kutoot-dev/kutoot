@@ -25,6 +25,12 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="WORLD_DB_CONNECTION" value="world_mysql"/>
+        <env name="WORLD_DB_HOST" value="127.0.0.1"/>
+        <env name="WORLD_DB_PORT" value="3306"/>
+        <env name="WORLD_DB_DATABASE" value="kutoot"/>
+        <env name="WORLD_DB_USERNAME" value="laravel"/>
+        <env name="WORLD_DB_PASSWORD" value="Laravel@9493"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
