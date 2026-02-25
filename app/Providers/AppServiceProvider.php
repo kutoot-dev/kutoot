@@ -40,8 +40,10 @@ class AppServiceProvider extends ServiceProvider
         // Prevent mass-assignment protection (app uses validated form requests)
         Model::unguard();
 
-        // Enable strict mode in ALL environments to catch N+1 queries early
-        Model::shouldBeStrict(! $this->app->isProduction());
+        // Enable strict mode parts to catch N+1 queries early, 
+        // but allow accessing missing attributes to prevent crashes.
+        Model::preventLazyLoading(! $this->app->isProduction());
+        Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
 
         // Prevent lazy loading in production too (log instead of throw)
         if ($this->app->isProduction()) {
