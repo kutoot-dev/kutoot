@@ -18,13 +18,13 @@ class CouponCategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'slug' => $this->slug,
+            'slug' => $this->whenHas('slug'),
             'icon' => $this->icon,
-            'is_active' => $this->is_active,
+            'is_active' => $this->whenHas('is_active'),
             'coupons_count' => $this->whenCounted('coupons'),
             'subscription_plans' => SubscriptionPlanResource::collection($this->whenLoaded('subscriptionPlans')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->whenHas('created_at', fn () => $this->created_at?->toISOString()),
+            'updated_at' => $this->whenHas('updated_at', fn () => $this->updated_at?->toISOString()),
         ];
     }
 }
