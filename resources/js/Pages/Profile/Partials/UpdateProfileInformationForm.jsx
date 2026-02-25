@@ -16,6 +16,14 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            mobile: user.mobile,
+            gender: user.gender,
+            country: user.country,
+            state: user.state,
+            city: user.city,
+            pin_code: user.pin_code,
+            full_address: user.full_address,
+            profile_picture: null,
         });
 
     const submit = (e) => {
@@ -62,11 +70,113 @@ export default function UpdateProfileInformation({
                         className="mt-1 block w-full"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
-                        required
                         autoComplete="username"
                     />
 
                     <InputError className="mt-2" message={errors.email} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="mobile" value="Mobile" />
+
+                    <TextInput
+                        id="mobile"
+                        className="mt-1 block w-full"
+                        value={data.mobile}
+                        onChange={(e) => setData('mobile', e.target.value)}
+                        autoComplete="tel"
+                    />
+
+                    <InputError className="mt-2" message={errors.mobile} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="gender" value="Gender" />
+                    <select
+                        id="gender"
+                        className="mt-1 block w-full rounded-md border-gray-300"
+                        value={data.gender || ''}
+                        onChange={(e) => setData('gender', e.target.value)}
+                    >
+                        <option value="">Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <InputError className="mt-2" message={errors.gender} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="country" value="Country" />
+                    <TextInput
+                        id="country"
+                        className="mt-1 block w-full"
+                        value={data.country}
+                        onChange={(e) => setData('country', e.target.value)}
+                    />
+                    <InputError className="mt-2" message={errors.country} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="state" value="State" />
+                    <TextInput
+                        id="state"
+                        className="mt-1 block w-full"
+                        value={data.state}
+                        onChange={(e) => setData('state', e.target.value)}
+                    />
+                    <InputError className="mt-2" message={errors.state} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="city" value="City" />
+                    <TextInput
+                        id="city"
+                        className="mt-1 block w-full"
+                        value={data.city}
+                        onChange={(e) => setData('city', e.target.value)}
+                    />
+                    <InputError className="mt-2" message={errors.city} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="pin_code" value="Pin code" />
+                    <TextInput
+                        id="pin_code"
+                        className="mt-1 block w-full"
+                        value={data.pin_code}
+                        onChange={(e) => setData('pin_code', e.target.value)}
+                    />
+                    <InputError className="mt-2" message={errors.pin_code} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="full_address" value="Full Address" />
+                    <textarea
+                        id="full_address"
+                        className="mt-1 block w-full border-gray-300 rounded-md"
+                        value={data.full_address}
+                        onChange={(e) => setData('full_address', e.target.value)}
+                    />
+                    <InputError className="mt-2" message={errors.full_address} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="profile_picture" value="Profile Picture" />
+                    {user.profile_picture_url && (
+                        <img
+                            src={user.profile_picture_url}
+                            alt="Current avatar"
+                            className="h-16 w-16 rounded-full object-cover mb-2"
+                        />
+                    )}
+                    <input
+                        id="profile_picture"
+                        type="file"
+                        className="mt-1 block w-full"
+                        onChange={(e) => setData('profile_picture', e.target.files[0])}
+                    />
+                    <InputError className="mt-2" message={errors.profile_picture} />
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

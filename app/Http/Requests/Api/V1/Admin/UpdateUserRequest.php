@@ -19,10 +19,18 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user')), 'required_without:mobile'],
+            'mobile' => ['nullable', 'string', 'max:20', Rule::unique('users', 'mobile')->ignore($this->route('user')), 'required_without:email'],
             'password' => ['sometimes', 'string', 'min:8'],
             'email_verified_at' => ['nullable', 'date'],
             'primary_campaign_id' => ['nullable', 'exists:campaigns,id'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'pin_code' => ['nullable', 'string', 'max:20'],
+            'full_address' => ['nullable', 'string', 'max:1000'],
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
             'roles' => ['sometimes', 'array'],
             'roles.*' => ['exists:roles,id'],
         ];

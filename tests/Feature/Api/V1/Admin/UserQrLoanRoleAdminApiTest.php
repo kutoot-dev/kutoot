@@ -7,6 +7,7 @@ use App\Models\QrCode;
 use App\Models\Stamp;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Permission;
 
@@ -30,12 +31,19 @@ it('lists users as admin', function () {
 it('creates a user as admin', function () {
     Sanctum::actingAs($this->admin);
 
+    $file = UploadedFile::fake()->image('avatar.jpg');
     $this->postJson('/api/v1/admin/users', [
         'name' => 'New User',
         'email' => 'newuser@example.com',
         'password' => 'password123',
+        'gender' => 'male',
+        'city' => 'Test City',
+        'profile_picture' => $file,
     ])->assertCreated()
         ->assertJsonPath('data.name', 'New User');
+
+    $created = User::where('email', 'newuser@example.com')->first();
+    expect($created->getFirstMedia('avatar'))->not->toBeNull();
 });
 
 it('validates required fields for user creation', function () {
@@ -44,6 +52,13 @@ it('validates required fields for user creation', function () {
     $this->postJson('/api/v1/admin/users', [])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['name', 'email', 'password']);
+
+    // ensure at least one of email or mobile is required
+    $this->postJson('/api/v1/admin/users', [
+        'name' => 'Foo',
+        'password' => 'password123',
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors(['email', 'mobile']);
 });
 
 it('validates unique email for user creation', function () {

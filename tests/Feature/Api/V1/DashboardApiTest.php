@@ -16,7 +16,18 @@ it('returns dashboard data for authenticated user', function () {
         ->assertSuccessful()
         ->assertJsonStructure([
             'data' => [
-                'user',
+                'user' => [
+                    'name',
+                    'email',
+                    'mobile',
+                    'gender',
+                    'country',
+                    'state',
+                    'city',
+                    'pin_code',
+                    'full_address',
+                    'profile_picture_url',
+                ],
                 'plan',
                 'stats',
             ],

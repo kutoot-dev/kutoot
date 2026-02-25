@@ -21,12 +21,15 @@ use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasEmailAuthentication, HasTenants
+class User extends Authenticatable implements FilamentUser, HasEmailAuthentication, HasMedia, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, InteractsWithEmailAuthentication, LogsActivity, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, InteractsWithEmailAuthentication, InteractsWithMedia, LogsActivity, Notifiable;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -51,6 +54,12 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         'otp_code',
         'otp_expires_at',
         'has_email_authentication',
+        'gender',
+        'country',
+        'state',
+        'city',
+        'pin_code',
+        'full_address',
     ];
 
     /**
@@ -63,6 +72,15 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         'remember_token',
         'otp_code',
         'otp_expires_at',
+    ];
+
+    /**
+     * Attributes that should be appended to the array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'profile_picture_url',
     ];
 
     /**
@@ -186,6 +204,38 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->fit(\Spatie\Image\Enums\Fit::Contain, 300, 300)
+            ->format('webp')
+            ->quality(80)
+            ->nonQueued();
+
+        $this->addMediaConversion('preview')
+            ->fit(\Spatie\Image\Enums\Fit::Contain, 800, 600)
+            ->format('webp')
+            ->quality(85)
+            ->withResponsiveImages();
+    }
+
+    /**
+     * Get the profile picture URL (avatar) if present.
+     */
+    public function getProfilePictureUrlAttribute(): ?string
+    {
+        $media = $this->getFirstMedia('avatar');
+
+        return $media ? $media->getUrl() : null;
     }
 
     /**

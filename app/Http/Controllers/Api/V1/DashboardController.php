@@ -55,6 +55,13 @@ class DashboardController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'mobile' => $user->mobile,
+                    'gender' => $user->gender,
+                    'country' => $user->country,
+                    'state' => $user->state,
+                    'city' => $user->city,
+                    'pin_code' => $user->pin_code,
+                    'full_address' => $user->full_address,
+                    'profile_picture_url' => $user->profile_picture_url,
                     'created_at' => $user->created_at->toISOString(),
                 ],
                 'plan' => $plan ? [

@@ -607,7 +607,7 @@ When a user account is created for the first time:
 
 The consumer's home screen after login:
 
-- **Profile Card** — User name, email, active plan name, primary campaign
+- **Profile Card** — Avatar image, user name (or mobile when name missing), email, mobile, active plan name, primary campaign, joined date
 - **Plan Status Card** — All plan metrics displayed: stamps earned, bills used, discount redeemed, with a days-remaining progress bar (color-coded: green > 14 days, amber > 7 days, red ≤ 7 days remaining)
 - **Quick Stats Row:**
   - Total Stamps collected
@@ -676,8 +676,7 @@ Transaction history:
 
 | Screen | Path | Purpose |
 |--------|------|---------|
-| Profile Edit | `/profile` | Edit name, email, primary campaign; delete account |
-| Executive QR | `/executive/qr/*` | QR code linking and batch management (field executive only) |
+| Profile Edit | `/profile` | Edit name, email, mobile, gender, country, state, city, pin code, full address, profile picture, primary campaign; delete account || Executive QR | `/executive/qr/*` | QR code linking and batch management (field executive only) |
 | OTP Login | `/login` | OTP-based authentication (email or mobile) |
 
 ---
@@ -753,7 +752,7 @@ The API follows RESTful conventions with JSON request/response format:
 | **Stamps** | `GET /api/v1/stamps`, `PUT /api/v1/stamps/{id}` | Stamp collection and code editing |
 | **Subscriptions** | `GET /api/v1/subscriptions`, `POST /api/v1/subscriptions/upgrade`, `POST /api/v1/subscriptions/verify-payment/{id}` | Plan management |
 | **Transactions** | `GET /api/v1/transactions` | Transaction history |
-| **Profile** | `GET /api/v1/profile`, `PUT /api/v1/profile` | User profile management |
+| **Profile** | `GET /api/v1/profile`, `PUT /api/v1/profile` | User profile management (name, email, mobile, gender, address fields, profile picture, primary campaign; at least one of email/mobile required) |
 | **QR Scan** | `GET /api/v1/qr/{token}` | Process QR code scan |
 | **Admin** (16 endpoints) | Full CRUD for all entities | Back-office management API |
 

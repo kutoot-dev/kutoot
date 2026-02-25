@@ -18,10 +18,18 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email', 'required_without:mobile'],
+            'mobile' => ['nullable', 'string', 'max:20', 'unique:users,mobile', 'required_without:email'],
             'password' => ['required', 'string', 'min:8'],
             'email_verified_at' => ['nullable', 'date'],
             'primary_campaign_id' => ['nullable', 'exists:campaigns,id'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'pin_code' => ['nullable', 'string', 'max:20'],
+            'full_address' => ['nullable', 'string', 'max:1000'],
+            'profile_picture' => ['nullable', 'image', 'max:2048'],
             'roles' => ['sometimes', 'array'],
             'roles.*' => ['exists:roles,id'],
         ];

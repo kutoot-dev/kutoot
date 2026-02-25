@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -61,7 +62,14 @@ class UserController extends Controller
         $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
 
-        $user = User::create($data);
+        // remove upload key before mass assignment; file handled separately
+        $createData = Arr::except($data, ['profile_picture']);
+
+        $user = User::create($createData);
+
+        if ($request->hasFile('profile_picture')) {
+            $user->addMediaFromRequest('profile_picture')->toMediaCollection('avatar');
+        }
 
         if (isset($data['roles'])) {
             $user->syncRoles(
@@ -82,6 +90,11 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user): UserResource
     {
         $data = $request->validated();
+
+        if ($request->hasFile('profile_picture')) {
+            $user->clearMediaCollection('avatar');
+            $user->addMediaFromRequest('profile_picture')->toMediaCollection('avatar');
+        }
 
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);

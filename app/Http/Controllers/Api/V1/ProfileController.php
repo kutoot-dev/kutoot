@@ -7,6 +7,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 /**
  * @tags Profile
@@ -35,7 +36,15 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): UserResource
     {
         $user = $request->user();
-        $user->fill($request->validated());
+        $data = $request->validated();
+
+        // save picture if provided
+        if ($request->hasFile('profile_picture')) {
+            $user->clearMediaCollection('avatar');
+            $user->addMediaFromRequest('profile_picture')->toMediaCollection('avatar');
+        }
+
+        $user->fill(Arr::except($data, ['profile_picture']));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

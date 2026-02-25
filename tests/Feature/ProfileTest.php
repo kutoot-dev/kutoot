@@ -12,7 +12,7 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['gender' => 'male']);
 
         $response = $this
             ->actingAs($user)
@@ -23,6 +23,18 @@ class ProfileTest extends TestCase
 
     public function test_profile_information_can_be_updated(): void
     {
+        // ensure validation requires at least one contact
+        $user = User::factory()->create();
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'foo',
+                'email' => null,
+                'mobile' => null,
+            ])
+            ->assertSessionHasErrors(['email', 'mobile']);
+
+        $user->refresh();
+        // continue with normal update
         $user = User::factory()->create();
 
         $response = $this
@@ -30,6 +42,8 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'mobile' => null,
+                'gender' => 'female',
             ]);
 
         $response
@@ -41,6 +55,23 @@ class ProfileTest extends TestCase
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_user_can_upload_avatar(): void
+    {
+        $user = User::factory()->create();
+        $file = \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg');
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'profile_picture' => $file,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertNotNull($user->fresh()->getFirstMedia('avatar'));
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
