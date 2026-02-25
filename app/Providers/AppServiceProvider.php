@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Contracts\SmsContract;
 use App\Services\Sms\SmsManager;
-use Illuminate\Database\Eloquent\Model;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -63,6 +66,14 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::before(static function ($user, $ability) {
             return $user->hasRole('Super Admin') ? true : null;
+        });
+
+        // Scramble: register Bearer token auth so docs show the Authorize input
+        Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
+            $openApi->secure(
+                SecurityScheme::http('bearer', 'JWT')
+                    ->setDescription('Sanctum Bearer token obtained via the OTP login flow.')
+            );
         });
     }
 }
