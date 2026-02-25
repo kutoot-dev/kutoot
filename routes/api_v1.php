@@ -59,6 +59,10 @@ Route::get('/campaigns', [CampaignController::class, 'index'])
 Route::get('/campaigns/{campaign}', [CampaignController::class, 'show'])
     ->name('api.v1.campaigns.show');
 
+// Subscription plans (public, no auth needed)
+Route::get('/subscriptions/plans', [SubscriptionController::class, 'plans'])
+    ->name('api.v1.subscriptions.plans');
+
 // ── Authenticated user endpoints ─────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
     // Dashboard
@@ -79,9 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/coupons/verify-payment', [CouponController::class, 'verifyPayment'])
         ->name('api.v1.coupons.verify-payment');
 
-    // Subscriptions
-    Route::get('/subscriptions/plans', [SubscriptionController::class, 'plans'])
-        ->name('api.v1.subscriptions.plans');
+    // Subscriptions (auth-protected)
     Route::get('/subscriptions/current', [SubscriptionController::class, 'current'])
         ->name('api.v1.subscriptions.current');
     Route::post('/subscriptions/upgrade', [SubscriptionController::class, 'upgrade'])
