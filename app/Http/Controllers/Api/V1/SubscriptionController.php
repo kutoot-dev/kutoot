@@ -39,7 +39,7 @@ class SubscriptionController extends Controller
     public function plans(): AnonymousResourceCollection
     {
         $plans = SubscriptionPlan::query()
-            ->with(['campaigns:id,reward_name,category_id,status', 'couponCategories:id,name,icon'])
+            ->with(['campaigns', 'couponCategories:id,name,icon'])
             ->get();
 
         return SubscriptionPlanResource::collection($plans);

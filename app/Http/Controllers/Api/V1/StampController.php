@@ -32,7 +32,7 @@ class StampController extends Controller
 
         $stamps = $user->stamps()
             ->when($request->input('campaign_id'), fn ($q, $cId) => $q->where('campaign_id', $cId))
-            ->with(['campaign:id,reward_name,code,stamp_slots,stamp_slot_min,stamp_slot_max', 'transaction:id,amount,original_bill_amount'])
+            ->with(['campaign', 'transaction:id,amount,original_bill_amount'])
             ->latest()
             ->paginate(min((int) $request->input('per_page', 15), 50));
 
