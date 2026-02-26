@@ -26,7 +26,7 @@ class PermissionController extends Controller
         $permissions = Permission::query()
             ->when($request->input('search'), fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->input('filter.guard_name'), fn ($q, $g) => $q->where('guard_name', $g))
-            ->orderBy('name')
+            ->latest()
             ->paginate($request->integer('per_page', 50));
 
         return PermissionResource::collection($permissions);
