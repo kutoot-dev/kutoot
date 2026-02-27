@@ -15,6 +15,7 @@ return [
 
     'allowed_methods' => ['*'],
 
+
     'allowed_origins' => env('CORS_ALLOWED_ORIGINS')
         ? array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS')))
         : [
