@@ -18,6 +18,10 @@ class MerchantLocationsTable
             ->columns([
                 TextColumn::make('merchant.name')
                     ->searchable(),
+                TextColumn::make('merchantCategory.name')
+                    ->label('Category')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('branch_name')
                     ->searchable(),
                 SpatieMediaLibraryImageColumn::make('media')

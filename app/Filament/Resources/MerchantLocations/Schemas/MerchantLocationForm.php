@@ -9,7 +9,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class MerchantLocationForm
 {
@@ -20,6 +22,31 @@ class MerchantLocationForm
                 Select::make('merchant_id')
                     ->relationship('merchant', 'name')
                     ->required(),
+                Select::make('merchant_category_id')
+                    ->relationship('merchantCategory', 'name')
+                    ->label('Store Category')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
+                Select::make('tags')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->preload(),
+                Select::make('state_id')
+                    ->relationship('state', 'name')
+                    ->label('State')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->nullable(),
+                Select::make('city_id')
+                    ->relationship('city', 'name', fn (Builder $query, Get $get) => 
+                        $query->when($get('state_id'), fn ($query, $stateId) => $query->where('state_id', $stateId))
+                    )
+                    ->label('City')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 TextInput::make('branch_name')
                     ->required(),
                 TextInput::make('commission_percentage')

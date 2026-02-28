@@ -25,6 +25,8 @@ class MerchantLocation extends Model implements HasMedia
     protected $fillable = [
         'merchant_id',
         'merchant_category_id',
+        'state_id',
+        'city_id',
         'branch_name',
         'commission_percentage',
         'is_active',
@@ -70,6 +72,22 @@ class MerchantLocation extends Model implements HasMedia
     public function merchantCategory(): BelongsTo
     {
         return $this->belongsTo(MerchantCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<\Nnjeim\World\Models\State, $this>
+     */
+    public function state(): BelongsTo
+    {
+        return $this->belongsTo(\Nnjeim\World\Models\State::class);
+    }
+
+    /**
+     * @return BelongsTo<\Nnjeim\World\Models\City, $this>
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(\Nnjeim\World\Models\City::class);
     }
 
     /**
