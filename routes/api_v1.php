@@ -6,28 +6,23 @@ use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FeaturedBannerController;
 use App\Http\Controllers\Api\V1\MarketingBannerController;
+use App\Http\Controllers\Api\V1\MerchantCategoryController;
 use App\Http\Controllers\Api\V1\MerchantLocationController;
 use App\Http\Controllers\Api\V1\NewsArticleController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QrScanController;
+use App\Http\Controllers\Api\V1\SponsorController;
 use App\Http\Controllers\Api\V1\StampController;
 use App\Http\Controllers\Api\V1\StoreBannerController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
+use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Nnjeim\World\Http\Controllers\City\CityController;
 use Nnjeim\World\Http\Controllers\Country\CountryController;
 use Nnjeim\World\Http\Controllers\State\StateController;
 
-/*
-|--------------------------------------------------------------------------
-| API V1 Routes
-|--------------------------------------------------------------------------
-|
-| All routes are automatically prefixed with /api/v1 and use the 'api'
-| middleware group. Sanctum token-based auth is used for protected routes.
-|
-*/
+/* |-------------------------------------------------------------------------- | API V1 Routes |-------------------------------------------------------------------------- | | All routes are automatically prefixed with /api/v1 and use the 'api' | middleware group. Sanctum token-based auth is used for protected routes. | */
 
 // ── World reference data (public, no auth) ─────────────────────────────
 Route::get('/countries', [CountryController::class, 'index'])
@@ -53,7 +48,8 @@ Route::prefix('auth')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout'])
             ->name('api.v1.auth.logout');
-    });
+    }
+    );
 });
 
 // ── Public endpoints ─────────────────────────────────────────────────────
@@ -76,6 +72,20 @@ Route::get('/featured-banners', [FeaturedBannerController::class, 'index'])
     ->name('api.v1.featured-banners.index');
 Route::get('/news-articles', [NewsArticleController::class, 'index'])
     ->name('api.v1.news-articles.index');
+
+// ── Merchant Categories (public store browsing) ────────────────────────
+Route::get('/store-categories', [MerchantCategoryController::class, 'index'])
+    ->name('api.v1.store-categories.index');
+Route::get('/store-categories/{merchantCategory}/stores', [MerchantCategoryController::class, 'stores'])
+    ->name('api.v1.store-categories.stores');
+
+// ── Sponsors (public) ───────────────────────────────────────────────────
+Route::get('/sponsors', [SponsorController::class, 'index'])
+    ->name('api.v1.sponsors.index');
+
+// ── Tags (public) ───────────────────────────────────────────────────────
+Route::get('/tags', [TagController::class, 'index'])
+    ->name('api.v1.tags.index');
 
 // ── Authenticated user endpoints ─────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {

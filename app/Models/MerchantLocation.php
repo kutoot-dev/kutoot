@@ -7,6 +7,7 @@ use App\Enums\TargetType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\LogOptions;
@@ -23,6 +24,7 @@ class MerchantLocation extends Model implements HasMedia
 
     protected $fillable = [
         'merchant_id',
+        'merchant_category_id',
         'branch_name',
         'commission_percentage',
         'is_active',
@@ -60,6 +62,22 @@ class MerchantLocation extends Model implements HasMedia
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    /**
+     * @return BelongsTo<MerchantCategory, $this>
+     */
+    public function merchantCategory(): BelongsTo
+    {
+        return $this->belongsTo(MerchantCategory::class);
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
     }
 
     /**
