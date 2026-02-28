@@ -27,7 +27,7 @@ class LoanTierController extends Controller
 
         $tiers = LoanTier::query()
             ->when($request->has('filter.is_active'), fn ($q) => $q->where('is_active', $request->boolean('filter.is_active')))
-            ->orderBy('min_streak_months')
+            ->latest()
             ->paginate($request->integer('per_page', 15));
 
         return LoanTierResource::collection($tiers);
