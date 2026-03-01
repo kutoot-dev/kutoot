@@ -3,13 +3,12 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Spatie\Media\Forms\SpatieMediaLibraryFileUpload;
 use Nnjeim\World\Models\City;
 use Nnjeim\World\Models\Country;
 use Nnjeim\World\Models\State;
@@ -72,6 +71,7 @@ class UserForm
                 SpatieMediaLibraryFileUpload::make('avatar')
                     ->collection('avatar')
                     ->image()
+                    ->conversion('thumb')
                     ->maxSize(2048)
                     ->label('Profile Picture'),
                 Select::make('primary_campaign_id')
