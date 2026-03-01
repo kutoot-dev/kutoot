@@ -9,6 +9,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Spatie\Media\Forms\SpatieMediaLibraryFileUpload;
 use Nnjeim\World\Models\City;
 use Nnjeim\World\Models\Country;
 use Nnjeim\World\Models\State;
@@ -68,10 +69,11 @@ class UserForm
                     ->nullable(),
                 TextInput::make('pin_code')->label('Pin code'),
                 Textarea::make('full_address')->label('Full address'),
-                FileUpload::make('profile_picture')
+                SpatieMediaLibraryFileUpload::make('avatar')
+                    ->collection('avatar')
                     ->image()
                     ->maxSize(2048)
-                    ->directory('avatars'),
+                    ->label('Profile Picture'),
                 Select::make('primary_campaign_id')
                     ->relationship('primaryCampaign', 'reward_name')
                     ->label('Primary Campaign'),
