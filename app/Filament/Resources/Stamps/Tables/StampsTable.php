@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Stamps\Tables;
 
+use App\Enums\StampStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class StampsTable
@@ -24,10 +26,21 @@ class StampsTable
                 TextColumn::make('source')
                     ->badge()
                     ->searchable(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->sortable(),
                 TextColumn::make('transaction.amount')
                     ->label('Transaction Amount')
                     ->money('INR')
                     ->placeholder('—'),
+                TextColumn::make('reserved_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('expires_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -39,7 +52,8 @@ class StampsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options(StampStatus::class),
             ])
             ->recordActions([
                 EditAction::make(),

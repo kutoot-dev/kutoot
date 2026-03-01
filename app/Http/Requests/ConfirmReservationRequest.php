@@ -4,11 +4,11 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VerifyPaymentRequest extends FormRequest
+class ConfirmReservationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return (bool) $this->user();
     }
 
     /**
@@ -21,9 +21,6 @@ class VerifyPaymentRequest extends FormRequest
             'razorpay_order_id' => ['required', 'string'],
             'razorpay_signature' => ['required', 'string'],
             'plan_id' => ['sometimes', 'exists:subscription_plans,id'],
-            'campaign_selections' => ['sometimes', 'array'],
-            'campaign_selections.*.campaign_id' => ['required_with:campaign_selections', 'exists:campaigns,id'],
-            'campaign_selections.*.stamp_count' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Stamps\Schemas;
 
 use App\Enums\StampSource;
+use App\Enums\StampStatus;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -27,6 +29,14 @@ class StampForm
                     ->options(StampSource::class)
                     ->default(StampSource::BillPayment)
                     ->required(),
+                Select::make('status')
+                    ->options(StampStatus::class)
+                    ->default(StampStatus::Used)
+                    ->required(),
+                DateTimePicker::make('reserved_at')
+                    ->nullable(),
+                DateTimePicker::make('expires_at')
+                    ->nullable(),
             ]);
     }
 }

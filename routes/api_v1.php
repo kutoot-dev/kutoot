@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QrScanController;
 use App\Http\Controllers\Api\V1\SponsorController;
 use App\Http\Controllers\Api\V1\StampController;
+use App\Http\Controllers\Api\V1\StampReservationController;
 use App\Http\Controllers\Api\V1\StoreBannerController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\TagController;
@@ -122,6 +123,18 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('api.v1.stamps.index');
     Route::patch('/stamps/{stamp}/code', [StampController::class, 'updateCode'])
         ->name('api.v1.stamps.update-code');
+
+    // Stamp Reservations
+    Route::post('/stamps/reserve', [StampReservationController::class, 'reserve'])
+        ->name('api.v1.stamps.reserve');
+    Route::get('/stamps/reservation/{stamp}', [StampReservationController::class, 'show'])
+        ->name('api.v1.stamps.reservation.show');
+    Route::post('/stamps/reservation/{stamp}/create-order', [StampReservationController::class, 'createOrder'])
+        ->name('api.v1.stamps.reservation.create-order');
+    Route::post('/stamps/reservation/{stamp}/confirm', [StampReservationController::class, 'confirm'])
+        ->name('api.v1.stamps.reservation.confirm');
+    Route::delete('/stamps/reservation/{stamp}', [StampReservationController::class, 'cancel'])
+        ->name('api.v1.stamps.reservation.cancel');
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index'])

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StampSource;
+use App\Enums\StampStatus;
 use App\Events\StampsIssued;
 use App\Models\Campaign;
 use App\Models\Stamp;
@@ -162,6 +163,7 @@ class StampService
                 'transaction_id' => $transaction?->id,
                 'code' => $code,
                 'source' => $source,
+                'status' => StampStatus::Used,
                 'editable_until' => $editableUntil,
             ]);
         }
@@ -174,7 +176,7 @@ class StampService
     /**
      * Generate a unique stamp code for a campaign, retrying on collision.
      */
-    protected function generateUniqueStampCode(Campaign $campaign): string
+    public function generateUniqueStampCode(Campaign $campaign): string
     {
         if (! $campaign->hasStampConfig()) {
             return 'STP-'.strtoupper(Str::random(8));

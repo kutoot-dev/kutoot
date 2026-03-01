@@ -22,8 +22,10 @@ class SubscriptionService
      * Expires existing active subscriptions and creates a new one.
      * Reconciles campaign subscriptions and auto-subscribes to new campaigns.
      * If a paid transaction is provided (from Razorpay checkout), use it instead of creating a new one.
+     *
+     * @param  array<int, array{campaign_id: int, stamp_count?: int}>  $campaignSelections
      */
-    public function upgradePlan(User $user, int $planId, ?Transaction $paidTransaction = null): UserSubscription
+    public function upgradePlan(User $user, int $planId, ?Transaction $paidTransaction = null, array $campaignSelections = []): UserSubscription
     {
         // Expire existing active subscriptions
         $user->subscriptions()->where('status', SubscriptionStatus::Active)->update([
@@ -63,6 +65,21 @@ class SubscriptionService
             $this->campaignSubscriptionService->reconcileAfterPlanChange($user, $plan);
             $this->campaignSubscriptionService->autoSubscribeForPlan($user, $plan);
             $user->refresh();
+        }
+
+        // If campaign selections were provided, set the first one as primary
+        if (! empty($campaignSelections) && $plan) {
+            $primaryCampaignId = $campaignSelections[0]['campaign_id'] ?? null;
+            if ($primaryCampaignId) {
+                $isAccessible = $plan->campaigns()->where('campaigns.id', $primaryCampaignId)->exists();
+                if ($isAccessible) {
+                    if (! $user->isSubscribedToCampaign($primaryCampaignId)) {
+                        $this->campaignSubscriptionService->subscribe($user, $primaryCampaignId);
+                    }
+                    $this->campaignSubscriptionService->setPrimary($user, $primaryCampaignId);
+                    $user->refresh();
+                }
+            }
         }
 
         if ($plan && $plan->stamps_on_purchase > 0 && $user->primary_campaign_id) {

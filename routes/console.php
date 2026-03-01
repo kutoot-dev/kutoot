@@ -19,3 +19,6 @@ Schedule::command('sanctum:prune-expired --hours=24')->daily();
 
 // Recalculate monthly targets on the 1st of each month at 1:00 AM
 Schedule::command('app:recalculate-monthly-targets')->monthlyOn(1, '01:00');
+
+// Release expired stamp reservations every minute
+Schedule::command('stamps:release-expired')->everyMinute();

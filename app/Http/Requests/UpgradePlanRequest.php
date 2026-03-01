@@ -18,6 +18,9 @@ class UpgradePlanRequest extends FormRequest
     {
         return [
             'plan_id' => ['required', 'exists:subscription_plans,id'],
+            'campaign_selections' => ['sometimes', 'array'],
+            'campaign_selections.*.campaign_id' => ['required_with:campaign_selections', 'exists:campaigns,id'],
+            'campaign_selections.*.stamp_count' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 

@@ -102,10 +102,11 @@ class SubscriptionController extends Controller
         }
 
         $planPrice = (float) $plan->price;
+        $campaignSelections = $validated['campaign_selections'] ?? [];
 
         // Free plan — direct activation
         if ($planPrice <= 0) {
-            $this->subscriptionService->upgradePlan($user, $plan->id);
+            $this->subscriptionService->upgradePlan($user, $plan->id, campaignSelections: $campaignSelections);
 
             // Gather stamps awarded for this plan purchase
             $stamps = $user->stamps()
@@ -193,7 +194,10 @@ class SubscriptionController extends Controller
         $plan = SubscriptionPlan::findOrFail($planId);
         $user = $transaction->user;
 
-        $this->subscriptionService->upgradePlan($user, $plan->id, $transaction);
+        // Retrieve campaign selections from the request
+        $campaignSelections = $request->input('campaign_selections', []);
+
+        $this->subscriptionService->upgradePlan($user, $plan->id, $transaction, $campaignSelections);
 
         // Gather stamps awarded for this transaction
         $stamps = $transaction->fresh()->stamps()->with('campaign')->get();
