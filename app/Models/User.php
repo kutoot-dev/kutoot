@@ -51,6 +51,7 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
     protected $fillable = [
         'name',
         'email',
+        'username',
         'mobile',
         'password',
         'primary_campaign_id',
@@ -286,7 +287,9 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
      */
     public function merchantLocations(): BelongsToMany
     {
-        return $this->belongsToMany(MerchantLocation::class, 'merchant_location_user');
+        return $this->belongsToMany(MerchantLocation::class, 'merchant_location_user')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     /**

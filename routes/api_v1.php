@@ -7,7 +7,10 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FeaturedBannerController;
 use App\Http\Controllers\Api\V1\MarketingBannerController;
 use App\Http\Controllers\Api\V1\MerchantCategoryController;
+use App\Http\Controllers\Api\V1\MerchantLocationApplicationController;
+use App\Http\Controllers\Api\V1\MerchantLocationAuthController;
 use App\Http\Controllers\Api\V1\MerchantLocationController;
+use App\Http\Controllers\Api\V1\MerchantLocationOtpController;
 use App\Http\Controllers\Api\V1\NewsArticleController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QrScanController;
@@ -87,6 +90,37 @@ Route::get('/sponsors', [SponsorController::class, 'index'])
 // ── Tags (public) ───────────────────────────────────────────────────────
 Route::get('/tags', [TagController::class, 'index'])
     ->name('api.v1.tags.index');
+
+// ── Merchant Location Registration & Auth (public) ─────────────────────
+Route::prefix('merchant-locations')->group(function () {
+    // Store categories alias (same handler as /store-categories)
+    Route::get('/store-categories', [MerchantCategoryController::class, 'index'])
+        ->name('api.v1.merchant-locations.store-categories');
+
+    // OTP endpoints for registration
+    Route::post('/otp/send', [MerchantLocationOtpController::class, 'sendPhoneOtp'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.merchant-locations.otp.send');
+    Route::post('/otp/verify', [MerchantLocationOtpController::class, 'verifyPhoneOtp'])
+        ->middleware('throttle:10,1')
+        ->name('api.v1.merchant-locations.otp.verify');
+    Route::post('/otp/send-email', [MerchantLocationOtpController::class, 'sendEmailOtp'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.merchant-locations.otp.send-email');
+    Route::post('/otp/verify-email', [MerchantLocationOtpController::class, 'verifyEmailOtp'])
+        ->middleware('throttle:10,1')
+        ->name('api.v1.merchant-locations.otp.verify-email');
+
+    // Application submission
+    Route::post('/apply', [MerchantLocationApplicationController::class, 'apply'])
+        ->middleware('throttle:3,1')
+        ->name('api.v1.merchant-locations.apply');
+
+    // Merchant location login (username + password)
+    Route::post('/auth/login', [MerchantLocationAuthController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.merchant-locations.auth.login');
+});
 
 // ── Authenticated user endpoints ─────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
