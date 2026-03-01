@@ -72,8 +72,8 @@ class UserForm
                     ->collection('avatar')
                     ->image()
                     ->conversion('thumb')
-                    ->maxSize(2048)
-                    ->label('Profile Picture'),
+                    ->label('Profile Picture')
+                    ->rules(['nullable', 'image', 'mimes:jpeg,png,webp,svg']),
                 Select::make('primary_campaign_id')
                     ->relationship('primaryCampaign', 'reward_name')
                     ->label('Primary Campaign'),
