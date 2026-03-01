@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
     {
         $plans = SubscriptionPlan::query()
             ->with([
-                'campaigns' => fn ($q) => $q->withCount('stamps'),
+                'campaigns' => fn ($q) => $q->where('is_active', true)->where('status', 'active')->withCount('stamps'),
                 'couponCategories:id,name,icon',
             ])
             ->ordered()
@@ -182,10 +182,34 @@ class SubscriptionController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
+        // Idempotency: if already completed or paid, return success
+        if ($transaction->payment_status === PaymentStatus::Completed) {
+            $stamps = $transaction->fresh()->stamps()->with('campaign')->get();
+            return response()->json([
+                'message' => "Payment already verified! Plan activation complete.",
+                'transaction' => new TransactionResource($transaction->fresh()->load('stamps')),
+                'needs_campaign_selection' => ! $request->user()->primary_campaign_id,
+                'stamps_awarded' => $stamps->count(),
+                'stamps' => $stamps->map(fn ($stamp) => [
+                    'campaign_id' => $stamp->campaign_id,
+                    'campaign_name' => $stamp->campaign?->name,
+                    'count' => 1,
+                ])->groupBy('campaign_id')->map(fn ($group) => [
+                    'campaign_id' => $group[0]['campaign_id'],
+                    'campaign_name' => $group[0]['campaign_name'],
+                    'count' => $group->count(),
+                ])->values()->toArray(),
+            ]);
+        }
+
         $gateway = $this->paymentManager->driver($transaction->payment_gateway);
 
         if (! $gateway->verifyPayment($request->all())) {
-            return response()->json(['error' => 'Payment verification failed.'], 422);
+            Log::warning('Payment signature verification failed', [
+                'user_id' => $request->user()->id,
+                'order_id' => $request->input('razorpay_order_id'),
+            ]);
+            return response()->json(['error' => 'Payment verification failed. Please try again.'], 422);
         }
 
         $transaction->update([
@@ -200,7 +224,26 @@ class SubscriptionController extends Controller
         // Retrieve campaign selections from the request
         $campaignSelections = $request->input('campaign_selections', []);
 
-        $this->subscriptionService->upgradePlan($user, $plan->id, $transaction, $campaignSelections);
+        try {
+            $this->subscriptionService->upgradePlan($user, $plan->id, $transaction, $campaignSelections);
+        } catch (\Exception $e) {
+            // Payment is already verified and marked as Paid.
+            // Log the error but don't fail the entire request.
+            Log::error('Plan upgrade after payment failed: '.$e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'transaction_id' => $transaction->id,
+            ]);
+
+            return response()->json([
+                'message' => "Payment verified! However, plan activation encountered an issue: {$e->getMessage()}. Please contact support.",
+                'transaction' => new TransactionResource($transaction->fresh()->load('stamps')),
+                'needs_campaign_selection' => true,
+                'stamps_awarded' => 0,
+                'stamps' => [],
+                'partial_error' => $e->getMessage(),
+            ]);
+        }
 
         // Gather stamps awarded for this transaction
         $stamps = $transaction->fresh()->stamps()->with('campaign')->get();
@@ -209,6 +252,18 @@ class SubscriptionController extends Controller
             'message' => "Payment verified! Upgraded to {$plan->name}.",
             'transaction' => new TransactionResource($transaction->fresh()->load('stamps')),
             'needs_campaign_selection' => ! $user->fresh()->primary_campaign_id,
+            'stamps_awarded' => $stamps->count(),
+            'stamps' => $stamps->map(fn ($stamp) => [
+                'campaign_id' => $stamp->campaign_id,
+                'campaign_name' => $stamp->campaign?->name,
+                'count' => 1,
+            ])->groupBy('campaign_id')->map(fn ($group) => [
+                'campaign_id' => $group[0]['campaign_id'],
+                'campaign_name' => $group[0]['campaign_name'],
+                'count' => $group->count(),
+            ])->values()->toArray(),
+        ]);
+    }
             'stamps_awarded' => $stamps->count(),
             'stamps' => StampResource::collection($stamps),
         ]);

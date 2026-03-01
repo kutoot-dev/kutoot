@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\TransactionType;
 use App\Events\CommissionEarned;
 use App\Models\DiscountCoupon;
+use App\Models\SubscriptionPlan;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Notifications\TransferFailedNotification;
@@ -76,6 +77,7 @@ class RazorpayWebhookController extends Controller
 
         // Idempotency: skip if already processed
         if ($transaction->payment_status === PaymentStatus::Paid || $transaction->payment_status === PaymentStatus::Completed) {
+            Log::info('Razorpay Webhook: Payment already processed', ['order_id' => $orderId]);
             return response()->json(['status' => 'already_processed']);
         }
 
@@ -94,6 +96,12 @@ class RazorpayWebhookController extends Controller
                 $this->processCouponRedemption($transaction);
             }
         });
+
+        Log::info('Razorpay Webhook: Payment processed successfully', [
+            'order_id' => $orderId,
+            'transaction_id' => $transaction->id,
+            'type' => $transaction->type,
+        ]);
 
         return response()->json(['status' => 'ok']);
     }
@@ -173,17 +181,35 @@ class RazorpayWebhookController extends Controller
 
     private function processPlanPurchase(Transaction $transaction): void
     {
-        // Plan activation is handled by verifyPlanPayment in SubscriptionController
-        // Webhook serves as a backup — only activate if not already done
+        // Plan purchase - mark payment as completed via webhook as backup
         $user = $transaction->user;
         $activeSubscription = $user->activeSubscription;
 
-        // Check if the transaction's idempotency key suggests a plan purchase
-        // that wasn't activated yet via the callback flow
+        // If no active subscription yet, activate it via webhook (in case frontend callback fails)
         if (! $activeSubscription || $transaction->payment_status !== PaymentStatus::Completed) {
-            Log::info('Razorpay Webhook: Plan purchase captured, awaiting callback verification', [
-                'transaction_id' => $transaction->id,
-            ]);
+            try {
+                $plan = SubscriptionPlan::find($transaction->plan_id);
+
+                if ($plan) {
+                    // Activate the plan upgrade
+                    $this->subscriptionService->upgradePlan($user, $plan->id, $transaction, []);
+
+                    // Mark as completed
+                    $transaction->update(['payment_status' => PaymentStatus::Completed]);
+
+                    Log::info('Razorpay Webhook: Plan purchase activated', [
+                        'transaction_id' => $transaction->id,
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail the webhook response
+                Log::error('Razorpay Webhook: Plan purchase activation failed', [
+                    'transaction_id' => $transaction->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 

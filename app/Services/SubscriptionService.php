@@ -74,7 +74,16 @@ class SubscriptionService
                 $isAccessible = $plan->campaigns()->where('campaigns.id', $primaryCampaignId)->exists();
                 if ($isAccessible) {
                     if (! $user->isSubscribedToCampaign($primaryCampaignId)) {
-                        $this->campaignSubscriptionService->subscribe($user, $primaryCampaignId);
+                        // Direct attach without full eligibility validation since
+                        // we're inside a plan upgrade and already verified plan access.
+                        $hasPrimary = $user->campaigns()->wherePivot('is_primary', true)->exists();
+                        $user->campaigns()->attach($primaryCampaignId, [
+                            'is_primary' => ! $hasPrimary,
+                            'subscribed_at' => now(),
+                        ]);
+                        if (! $hasPrimary) {
+                            $user->update(['primary_campaign_id' => $primaryCampaignId]);
+                        }
                     }
                     $this->campaignSubscriptionService->setPrimary($user, $primaryCampaignId);
                     $user->refresh();

@@ -73,6 +73,7 @@ class Campaign extends Model implements HasMedia
             'stamp_slot_max' => 'integer',
             'stamp_editable_on_plan_purchase' => 'boolean',
             'stamp_editable_on_coupon_redemption' => 'boolean',
+            'is_active' => 'boolean',
             'is_premium' => 'boolean',
         ];
     }
