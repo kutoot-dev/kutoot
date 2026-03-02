@@ -14,7 +14,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class FeaturedBanner extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\FeaturedBannerFactory> */
-    use HasFactory, InteractsWithMedia, LogsActivity;
+    use HasFactory, InteractsWithMedia, LogsActivity, \App\Traits\HasImageUrls;
 
     protected $fillable = [
         'title',

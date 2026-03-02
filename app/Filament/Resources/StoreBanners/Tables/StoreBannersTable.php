@@ -6,7 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,9 +16,9 @@ class StoreBannersTable
     {
         return $table
             ->columns([
-                SpatieMediaLibraryImageColumn::make('image')
-                    ->collection('image')
-                    ->conversion('thumb')
+                ImageColumn::make('image_url')
+                    ->label('Image')
+                    ->state(fn ($record) => $record->image_url)
                     ->circular(),
                 TextColumn::make('title')
                     ->searchable()

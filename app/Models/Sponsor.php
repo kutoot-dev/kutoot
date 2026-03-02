@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Sponsor extends Model
 {
     /** @use HasFactory<\Database\Factories\SponsorFactory> */
-    use HasFactory;
+    use HasFactory, \App\Traits\HasImageUrls;
 
     protected $fillable = [
         'name',

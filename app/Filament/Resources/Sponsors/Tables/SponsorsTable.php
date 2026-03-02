@@ -22,8 +22,10 @@ class SponsorsTable
                 TextColumn::make('type')
                     ->searchable(),
                 ImageColumn::make('logo')
+                    ->state(fn ($record) => $record->image_url) // Note: getImageUrlAttribute prioritized logo/image
                     ->circular(),
-                ImageColumn::make('banner'),
+                ImageColumn::make('banner')
+                    ->state(fn ($record) => \Illuminate\Support\Facades\Storage::disk('public')->url($record->banner)),
                 TextColumn::make('link')
                     ->searchable(),
                 TextColumn::make('serial')

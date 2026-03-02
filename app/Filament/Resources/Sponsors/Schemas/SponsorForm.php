@@ -23,10 +23,12 @@ class SponsorForm
                 FileUpload::make('logo')
                     ->image()
                     ->directory('sponsors')
+                    ->disk('public')
                     ->maxSize(2048),
                 FileUpload::make('banner')
                     ->image()
                     ->directory('sponsors-banners')
+                    ->disk('public')
                     ->maxSize(4096),
                 TextInput::make('link')
                     ->url()
