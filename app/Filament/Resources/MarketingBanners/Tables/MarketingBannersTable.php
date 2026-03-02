@@ -16,9 +16,9 @@ class MarketingBannersTable
     {
         return $table
             ->columns([
-                SpatieMediaLibraryImageColumn::make('image')
-                    ->collection('image')
-                    ->conversion('thumb')
+                ImageColumn::make('images')
+                    ->label('Image')
+                    ->state(fn ($record) => $record->getFirstMediaUrl('images', 'thumb') ?: $record->getFirstMediaUrl('images'))
                     ->circular(),
                 TextColumn::make('title')
                     ->searchable()

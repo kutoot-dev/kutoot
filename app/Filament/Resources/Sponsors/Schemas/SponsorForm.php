@@ -20,15 +20,15 @@ class SponsorForm
                     ->required()
                     ->maxLength(255)
                     ->default('Sponsor'),
-                FileUpload::make('logo')
+                SpatieMediaLibraryFileUpload::make('logo')
+                    ->collection('logo')
                     ->image()
-                    ->directory('sponsors')
-                    ->disk('public')
+                    ->validationRules(['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'])
                     ->maxSize(2048),
-                FileUpload::make('banner')
+                SpatieMediaLibraryFileUpload::make('banner')
+                    ->collection('banner')
                     ->image()
-                    ->directory('sponsors-banners')
-                    ->disk('public')
+                    ->validationRules(['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'])
                     ->maxSize(4096),
                 TextInput::make('link')
                     ->url()

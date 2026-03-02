@@ -14,7 +14,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class FeaturedBanner extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\FeaturedBannerFactory> */
-    use HasFactory, InteractsWithMedia, LogsActivity, \App\Traits\HasImageUrls;
+    use HasFactory, InteractsWithMedia, LogsActivity;
 
     protected $fillable = [
         'title',
@@ -43,7 +43,7 @@ class FeaturedBanner extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('image')
+        $this->addMediaCollection('images')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }

@@ -22,10 +22,10 @@ class SponsorsTable
                 TextColumn::make('type')
                     ->searchable(),
                 ImageColumn::make('logo')
-                    ->state(fn ($record) => $record->image_url) // Note: getImageUrlAttribute prioritized logo/image
+                    ->state(fn ($record) => $record->getFirstMediaUrl('logo', 'thumb') ?: $record->getFirstMediaUrl('logo'))
                     ->circular(),
                 ImageColumn::make('banner')
-                    ->state(fn ($record) => \Illuminate\Support\Facades\Storage::disk('public')->url($record->banner)),
+                    ->state(fn ($record) => $record->getFirstMediaUrl('banner', 'thumb') ?: $record->getFirstMediaUrl('banner')),
                 TextColumn::make('link')
                     ->searchable(),
                 TextColumn::make('serial')

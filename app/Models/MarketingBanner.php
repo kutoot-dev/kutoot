@@ -44,7 +44,7 @@ class MarketingBanner extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('image')
+        $this->addMediaCollection('images')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }

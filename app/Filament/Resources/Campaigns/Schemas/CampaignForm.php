@@ -83,10 +83,12 @@ class CampaignForm
                     ->description('Upload images and videos for this campaign.')
                     ->collapsible()
                     ->components([
-                        SpatieMediaLibraryFileUpload::make('media')
-                            ->collection('media')
+                        SpatieMediaLibraryFileUpload::make('images')
+                            ->collection('images')
                             ->multiple()
                             ->reorderable()
+                            ->image()
+                            ->validationRules(['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'])
                             ->acceptedFileTypes([
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',

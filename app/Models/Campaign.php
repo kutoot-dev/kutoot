@@ -234,7 +234,7 @@ class Campaign extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('media')
+        $this->addMediaCollection('images')
             ->acceptsMimeTypes([
                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                 'video/mp4', 'video/webm', 'video/quicktime',

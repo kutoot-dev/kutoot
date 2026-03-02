@@ -16,9 +16,9 @@ class NewsArticlesTable
     {
         return $table
             ->columns([
-                ImageColumn::make('image_url')
+                ImageColumn::make('images')
                     ->label('Image')
-                    ->state(fn ($record) => $record->image_url)
+                    ->state(fn ($record) => $record->getFirstMediaUrl('images', 'thumb') ?: $record->getFirstMediaUrl('images'))
                     ->circular(),
                 TextColumn::make('title')
                     ->searchable()

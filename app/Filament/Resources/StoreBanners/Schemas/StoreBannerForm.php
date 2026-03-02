@@ -26,9 +26,10 @@ class StoreBannerForm
                     ->numeric()
                     ->default(0)
                     ->minValue(0),
-                SpatieMediaLibraryFileUpload::make('image')
-                    ->collection('image')
+                SpatieMediaLibraryFileUpload::make('images')
+                    ->collection('images')
                     ->image()
+                    ->validationRules(['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'])
                     ->conversion('thumb')
                     ->responsiveImages()
                     ->maxSize(2048),
