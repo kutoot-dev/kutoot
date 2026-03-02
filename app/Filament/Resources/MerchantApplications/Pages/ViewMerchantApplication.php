@@ -156,6 +156,7 @@ class ViewMerchantApplication extends ViewRecord
                 // Update existing user with username if not set
                 if (! $user->username) {
                     $user->update(['username' => $username]);
+                    Log::info("Assigned username {$username} to existing user {$user->id}");
                 } else {
                     $username = $user->username;
                 }
@@ -169,11 +170,23 @@ class ViewMerchantApplication extends ViewRecord
                     'username' => $username,
                     'password' => Hash::make($plainPassword),
                 ]);
+                Log::info("Created new user {$user->id} with username {$username} for store {$app->store_name}");
             }
 
             // 5. Attach user to merchant location with 'owner' role
             if (! $user->merchantLocations()->where('merchant_location_id', $location->id)->exists()) {
-                $user->merchantLocations()->attach($location->id, ['role' => 'owner']);
+                try {
+                    $user->merchantLocations()->attach($location->id, ['role' => 'owner']);
+                    Log::info("Successfully attached user {$user->id} (username: {$username}) to merchant location {$location->id}");
+                } catch (\Exception $e) {
+                    Log::error("Failed to attach user {$user->id} to merchant location {$location->id}: " . $e->getMessage());
+                    throw new \Exception("Failed to associate store with user account: " . $e->getMessage());
+                }
+            }
+
+            // Verify the attachment was successful
+            if (! $user->merchantLocations()->where('merchant_location_id', $location->id)->exists()) {
+                throw new \Exception("Store association verification failed. User was not properly linked to the merchant location.");
             }
 
             // 6. Update application status
@@ -190,8 +203,10 @@ class ViewMerchantApplication extends ViewRecord
                 Mail::to($app->owner_email)->send(
                     new MerchantCredentialsMail($app->store_name, $username, $plainPassword)
                 );
+                Log::info("Credentials email sent successfully to {$app->owner_email}");
             } catch (\Exception $e) {
                 Log::error("Failed to send credentials email to {$app->owner_email}: " . $e->getMessage());
+                // Don't fail the entire transaction for email failure
             }
 
             // 8. Send credentials via SMS
@@ -199,13 +214,15 @@ class ViewMerchantApplication extends ViewRecord
                 $sms = app(SmsContract::class);
                 $message = "Welcome to Kutoot! Your store \"{$app->store_name}\" is approved. Login: Username: {$username}, Password: {$plainPassword}. Change your password after first login. -Team Kutoot";
                 $sms->send($app->owner_mobile, $message);
+                Log::info("Credentials SMS sent successfully to {$app->owner_mobile}");
             } catch (\Exception $e) {
                 Log::error("Failed to send credentials SMS to {$app->owner_mobile}: " . $e->getMessage());
+                // Don't fail the entire transaction for SMS failure
             }
 
             Notification::make()
                 ->title('Application Approved!')
-                ->body("Store \"{$app->store_name}\" created successfully. Credentials sent to {$app->owner_email} & {$app->owner_mobile}.")
+                ->body("Store \"{$app->store_name}\" created successfully. Username: {$username}. Credentials sent to {$app->owner_email} & {$app->owner_mobile}.")
                 ->success()
                 ->send();
         });
