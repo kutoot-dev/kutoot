@@ -255,14 +255,14 @@ class Campaign extends Model implements HasMedia
             ->format('webp')
             ->quality(80)
             ->nonQueued()
-            ->onlyApplyOnCollections('media');
+            ->performOnCollections('media');
 
         $this->addMediaConversion('preview')
             ->fit(Fit::Contain, 800, 600)
             ->format('webp')
             ->quality(85)
             ->withResponsiveImages()
-            ->onlyApplyOnCollections('media');
+            ->performOnCollections('media');
 
         // Conversion for 'sponsor_image' collection
         $this->addMediaConversion('sponsor_thumb')
@@ -270,6 +270,6 @@ class Campaign extends Model implements HasMedia
             ->format('webp')
             ->quality(80)
             ->nonQueued()
-            ->onlyApplyOnCollections('sponsor_image');
+            ->performOnCollections('sponsor_image');
     }
 }
