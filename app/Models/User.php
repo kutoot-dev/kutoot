@@ -246,13 +246,15 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         $this->addMediaConversion('thumb')
             ->fit(\Spatie\Image\Enums\Fit::Contain, 300, 300)
             ->format('webp')
-            ->quality(80)
+            ->quality(90)
+            ->nonOptimized()
             ->nonQueued();
 
         $this->addMediaConversion('preview')
-            ->fit(\Spatie\Image\Enums\Fit::Contain, 800, 600)
+            ->fit(\Spatie\Image\Enums\Fit::Contain, 640, 640)
             ->format('webp')
-            ->quality(85)
+            ->quality(95)
+            ->nonOptimized()
             ->withResponsiveImages();
     }
 

@@ -54,13 +54,15 @@ class MarketingBanner extends Model implements HasMedia
         $this->addMediaConversion('thumb')
             ->fit(Fit::Contain, 300, 300)
             ->format('webp')
-            ->quality(80)
+            ->quality(90)
+            ->nonOptimized()
             ->nonQueued();
 
         $this->addMediaConversion('preview')
-            ->fit(Fit::Contain, 800, 600)
+            ->fit(Fit::Contain, 1920, 1080)
             ->format('webp')
-            ->quality(85)
+            ->quality(95)
+            ->nonOptimized()
             ->withResponsiveImages();
     }
 }

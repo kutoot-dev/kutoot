@@ -227,6 +227,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('api.v1.subscriptions.verify-payment');
     Route::post('/subscriptions/primary-campaign', [SubscriptionController::class, 'setPrimaryCampaign'])
         ->name('api.v1.subscriptions.primary-campaign');
+    Route::get('/subscriptions/available-campaigns', [SubscriptionController::class, 'availableCampaigns'])
+        ->name('api.v1.subscriptions.available-campaigns');
 
     // Stamps
     Route::get('/stamps', [StampController::class, 'index'])

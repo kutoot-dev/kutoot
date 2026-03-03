@@ -501,7 +501,7 @@ class CouponController extends Controller
                         'total_paid' => $grandTotal,
                     ]);
 
-                    $this->stampService->awardStampsForCouponRedemption($transaction);
+                    $this->stampService->awardStampsForCouponRedemption($transaction, isset($validated['campaign_id']) ? (int) $validated['campaign_id'] : null);
 
                     return response()->json([
                         'order' => null,
@@ -559,7 +559,9 @@ class CouponController extends Controller
             return response()->json(['error' => 'Payment verification failed.'], 422);
         }
 
-        DB::transaction(function () use ($transaction, $request): void {
+        $campaignId = $request->input('campaign_id') ? (int) $request->input('campaign_id') : null;
+
+        DB::transaction(function () use ($transaction, $request, $campaignId): void {
             $transaction->update([
                 'payment_status' => PaymentStatus::Paid,
                 'payment_id' => $request->input('razorpay_payment_id'),
@@ -580,7 +582,7 @@ class CouponController extends Controller
                 }
             }
 
-            $this->stampService->awardStampsForCouponRedemption($transaction);
+            $this->stampService->awardStampsForCouponRedemption($transaction, $campaignId);
 
             if ($transaction->commission_amount > 0 && $user->primary_campaign_id) {
                 $campaign = $user->primaryCampaign;
@@ -607,14 +609,16 @@ class CouponController extends Controller
         $validated = $request->validate([
             'merchant_location_id' => 'required|integer|exists:merchant_locations,id',
             'amount' => 'required|numeric|min:0.01',
+            'campaign_id' => 'nullable|integer|exists:campaigns,id',
         ]);
 
         $user = $request->user();
         $merchantLocation = MerchantLocation::with('merchant')->findOrFail($validated['merchant_location_id']);
         $amount = (float) $validated['amount'];
+        $campaignId = isset($validated['campaign_id']) ? (int) $validated['campaign_id'] : null;
 
         try {
-            return DB::transaction(function () use ($user, $merchantLocation, $amount): JsonResponse {
+            return DB::transaction(function () use ($user, $merchantLocation, $amount, $campaignId): JsonResponse {
                 $platformFee = (float) config('app.platform_fee', 10);
                 if (config('app.platform_fee_type') === 'percentage') {
                     $platformFee = ($amount * $platformFee) / 100;
@@ -650,7 +654,7 @@ class CouponController extends Controller
                         'payment_id' => 'zero_amount_' . $transaction->id,
                     ]);
 
-                    $this->stampService->awardStampsForCouponRedemption($transaction);
+                    $this->stampService->awardStampsForCouponRedemption($transaction, $campaignId);
 
                     return response()->json([
                         'order' => null,
