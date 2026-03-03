@@ -19,6 +19,7 @@ class SubscriptionPlan extends Model
         'sort_order',
         'best_value',
         'price',
+        'original_price',
         'is_default',
         'stamps_on_purchase',
         'stamp_denomination',
@@ -44,6 +45,7 @@ class SubscriptionPlan extends Model
     {
         return [
             'price' => 'decimal:2',
+            'original_price' => 'decimal:2',
             'stamp_denomination' => 'decimal:2',
             'max_redeemable_amount' => 'decimal:2',
             'is_default' => 'boolean',

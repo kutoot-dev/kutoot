@@ -24,6 +24,12 @@ class SubscriptionPlansTable
                 TextColumn::make('price')
                     ->money('INR')
                     ->sortable(),
+                TextColumn::make('original_price')
+                    ->label('MRP')
+                    ->money('INR')
+                    ->placeholder('—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_default')
                     ->boolean()
                     ->label('Default'),
