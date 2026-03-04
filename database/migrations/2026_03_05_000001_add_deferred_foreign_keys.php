@@ -18,11 +18,13 @@ class AddDeferredForeignKeys extends Migration
                 $table->foreign('primary_campaign_id')
                     ->references('id')->on('campaigns')
                     ->nullOnDelete();
-            } catch (\Exception $e) {
-                // Foreign key already exists, skip
-                if (!str_contains($e->getMessage(), 'Duplicate foreign key')) {
-                    throw $e;
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Ignore if foreign key already exists (error 1826 or duplicate constraint)
+                if (str_contains($e->getMessage(), 'Duplicate foreign key') ||
+                    str_contains($e->getMessage(), '1826')) {
+                    return;
                 }
+                throw $e;
             }
         });
 
@@ -32,11 +34,13 @@ class AddDeferredForeignKeys extends Migration
                 $table->foreign('merchant_category_id')
                     ->references('id')->on('merchant_categories')
                     ->nullOnDelete();
-            } catch (\Exception $e) {
-                // Foreign key already exists, skip
-                if (!str_contains($e->getMessage(), 'Duplicate foreign key')) {
-                    throw $e;
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Ignore if foreign key already exists (error 1826 or duplicate constraint)
+                if (str_contains($e->getMessage(), 'Duplicate foreign key') ||
+                    str_contains($e->getMessage(), '1826')) {
+                    return;
                 }
+                throw $e;
             }
         });
     }
