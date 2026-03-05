@@ -14,8 +14,18 @@ return new class extends Migration
             $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
             $table->foreignId('transaction_id')->nullable()->constrained()->nullOnDelete();
             $table->string('code')->unique();
-            $table->string('source')->default('bill_payment'); // plan_purchase, bill_payment
+            $table->string('source')->default('bill_payment');
+            $table->dateTime('editable_until')->nullable();
+            $table->string('status')->default('used');
+            $table->timestamp('reserved_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+
+            $table->index('source');
+            $table->index('created_at');
+            $table->index(['user_id', 'campaign_id']);
+            $table->index(['status', 'campaign_id', 'expires_at'], 'stamps_reservation_lookup');
+            $table->index(['user_id', 'campaign_id', 'status'], 'stamps_user_campaign_status');
         });
     }
 

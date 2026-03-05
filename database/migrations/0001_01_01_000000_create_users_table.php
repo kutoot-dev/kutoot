@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration 
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -14,10 +14,18 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('gender')->nullable();
             $table->string('email')->nullable()->unique();
+            $table->string('username')->nullable()->unique();
             $table->string('mobile')->nullable()->unique();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->unsignedBigInteger('state_id')->nullable();
+            $table->unsignedBigInteger('city_id')->nullable();
+            $table->string('pin_code')->nullable();
+            $table->text('full_address')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
+            $table->unsignedBigInteger('primary_campaign_id')->nullable();
             $table->string('otp_code', 6)->nullable();
             $table->timestamp('otp_expires_at')->nullable();
             $table->boolean('has_email_authentication')->default(false);

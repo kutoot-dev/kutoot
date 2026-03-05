@@ -4,6 +4,8 @@ use App\Filament\Resources\Campaigns\Pages\EditCampaign;
 use App\Models\Campaign;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -50,4 +52,34 @@ it('allows multiple media files in campaign media collection', function () {
     $campaign->addMedia($image2)->toMediaCollection('media');
 
     expect($campaign->getMedia('media'))->toHaveCount(2);
+});
+
+it('requires at least one image when media contains only videos', function () {
+    $video = UploadedFile::fake()->create('video.mp4', 1000, 'video/mp4');
+
+    $rule = function ($attribute, $value, $fail) {
+        if (is_array($value) && count($value) > 0) {
+            $hasImage = collect($value)->contains(fn($file) => Str::startsWith($file->getClientMimeType(), 'image/'));
+            if (! $hasImage) {
+                $fail('At least one image is required; videos will play on hover.');
+            }
+        }
+    };
+
+    $validator = Validator::make(
+        ['media' => [$video]],
+        ['media' => [$rule]]
+    );
+
+    expect($validator->fails())->toBeTrue();
+    expect($validator->errors()->first('media'))->toContain('At least one image is required');
+
+    // also assert that having an image passes
+    $image = UploadedFile::fake()->image('good.jpg');
+    $validator2 = Validator::make(
+        ['media' => [$image]],
+        ['media' => [$rule]]
+    );
+
+    expect($validator2->passes())->toBeTrue();
 });

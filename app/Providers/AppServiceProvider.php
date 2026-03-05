@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Register Observers
+        \App\Models\QrCode::observe(\App\Observers\QrCodeObserver::class);
+
         // API rate limiting
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
@@ -40,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         // Prevent mass-assignment protection (app uses validated form requests)
         Model::unguard();
 
-        // Enable strict mode parts to catch N+1 queries early, 
+        // Enable strict mode parts to catch N+1 queries early,
         // but allow accessing missing attributes to prevent crashes.
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());

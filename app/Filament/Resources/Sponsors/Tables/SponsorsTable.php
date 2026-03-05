@@ -7,7 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
+use App\Filament\Tables\Columns\MediaColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -21,11 +21,13 @@ class SponsorsTable
                     ->searchable(),
                 TextColumn::make('type')
                     ->searchable(),
-                ImageColumn::make('logo')
-                    ->state(fn ($record) => $record->getFirstMediaUrl('logo', 'thumb') ?: $record->getFirstMediaUrl('logo'))
+                MediaColumn::make('logo')
+                    ->collection('logo')
+                    ->conversion('thumb')
                     ->circular(),
-                ImageColumn::make('banner')
-                    ->state(fn ($record) => $record->getFirstMediaUrl('banner', 'thumb') ?: $record->getFirstMediaUrl('banner')),
+                MediaColumn::make('banner')
+                    ->collection('banner')
+                    ->conversion('thumb'),
                 TextColumn::make('link')
                     ->searchable(),
                 TextColumn::make('serial')

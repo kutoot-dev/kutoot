@@ -30,6 +30,12 @@ class SubscriptionPlanForm
                     ->numeric()
                     ->default(0)
                     ->prefix('₹'),
+                TextInput::make('original_price')
+                    ->label('Original Price / MRP (₹)')
+                    ->helperText('Marketing price shown as strike-through. Leave empty to hide. Must be higher than actual price to display.')
+                    ->numeric()
+                    ->nullable()
+                    ->prefix('₹'),
                 Toggle::make('is_default')
                     ->label('Default Plan')
                     ->helperText('New users will be assigned to this plan automatically.'),

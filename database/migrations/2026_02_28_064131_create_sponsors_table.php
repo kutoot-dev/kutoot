@@ -12,8 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('type')->default('Sponsor');
-            $table->string('logo')->nullable();
-            $table->string('banner')->nullable();
             $table->string('link')->nullable();
             $table->unsignedInteger('serial')->default(0);
             $table->boolean('is_active')->default(true);

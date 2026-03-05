@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Sponsors\Schemas;
 
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -14,10 +15,12 @@ class SponsorInfolist
             ->components([
                 TextEntry::make('name'),
                 TextEntry::make('type'),
-                TextEntry::make('logo')
-                    ->placeholder('-'),
-                TextEntry::make('banner')
-                    ->placeholder('-'),
+                SpatieMediaLibraryImageEntry::make('logo')
+                    ->collection('logo')
+                    ->conversion('preview'),
+                SpatieMediaLibraryImageEntry::make('banner')
+                    ->collection('banner')
+                    ->conversion('preview'),
                 TextEntry::make('link')
                     ->placeholder('-'),
                 TextEntry::make('serial')

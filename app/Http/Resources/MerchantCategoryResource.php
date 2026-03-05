@@ -15,8 +15,8 @@ class MerchantCategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'image' => $this->image ? url(\Illuminate\Support\Facades\Storage::url($this->image)) : null,
-            'icon' => $this->icon ? url(\Illuminate\Support\Facades\Storage::url($this->icon)) : null,
+            'image' => $this->getFirstMediaUrl('image', 'preview') ?: null,
+            'icon' => $this->getFirstMediaUrl('icon', 'preview') ?: null,
             'serial' => $this->serial,
         ];
     }

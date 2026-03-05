@@ -10,8 +10,10 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -29,6 +31,9 @@ class QrCodesRelationManager extends RelationManager
                 TextInput::make('token')
                     ->required()
                     ->unique(ignoreRecord: true),
+                Toggle::make('is_primary')
+                    ->label('Is Primary')
+                    ->helperText('Check to make this the main QR code for this location.'),
                 Select::make('status')
                     ->options(QrCodeStatus::class)
                     ->default(QrCodeStatus::Available)
@@ -43,6 +48,9 @@ class QrCodesRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('unique_code')
                     ->searchable(),
+                IconColumn::make('is_primary')
+                    ->boolean()
+                    ->label('Primary'),
                 TextColumn::make('status')
                     ->badge(),
                 TextColumn::make('executive.name')

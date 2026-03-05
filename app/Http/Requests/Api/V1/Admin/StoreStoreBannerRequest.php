@@ -19,7 +19,7 @@ class StoreStoreBannerRequest extends FormRequest
             'link_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:' . config('upload.max_file_size_kb')],
         ];
     }
 
@@ -27,7 +27,7 @@ class StoreStoreBannerRequest extends FormRequest
     {
         return [
             'link_url.url' => 'The link URL must be a valid URL.',
-            'image.max' => 'The image must not be larger than 2MB.',
+            'image.max' => 'The image exceeds the maximum allowed file size.',
             'image.mimes' => 'The image must be a JPEG, PNG, or WebP file.',
         ];
     }

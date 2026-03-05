@@ -34,7 +34,7 @@ class MerchantLocationAuthController extends Controller
         }
 
         // Check that this user is associated with a merchant location
-        $location = $user->merchantLocations()->with('merchant', 'merchantCategory')->first();
+        $location = $user->merchantLocations()->with(['merchant', 'merchantCategory', 'qrCodes'])->first();
 
         if (! $location) {
             return response()->json([
@@ -66,6 +66,14 @@ class MerchantLocationAuthController extends Controller
                     'role' => $pivotRole,
                     'category' => $location->merchantCategory?->name,
                     'merchantName' => $location->merchant?->name,
+                    'qrCodes' => $location->qrCodes->map(fn ($qr) => [
+                        'unique_code' => $qr->unique_code,
+                        'token' => $qr->token,
+                        'status' => $qr->status,
+                        'is_primary' => (bool)$qr->is_primary,
+                        'url' => $qr->url,
+                        'short_url' => $qr->short_url,
+                    ])->toArray(),
                 ],
             ],
         ]);
@@ -79,7 +87,7 @@ class MerchantLocationAuthController extends Controller
         $user = $request->user();
 
         $locations = $user->merchantLocations()
-            ->with('merchant', 'merchantCategory')
+            ->with(['merchant', 'merchantCategory', 'qrCodes'])
             ->get();
 
         $primaryLocation = $locations->first();
@@ -106,6 +114,14 @@ class MerchantLocationAuthController extends Controller
                 'role' => $pivotRole,
                 'category' => $primaryLocation->merchantCategory?->name,
                 'merchantName' => $primaryLocation->merchant?->name,
+                'qrCodes' => $primaryLocation->qrCodes->map(fn ($qr) => [
+                    'unique_code' => $qr->unique_code,
+                    'token' => $qr->token,
+                    'status' => $qr->status,
+                    'is_primary' => (bool)$qr->is_primary,
+                    'url' => $qr->url,
+                    'short_url' => $qr->short_url,
+                ])->toArray(),
                 'locations' => $locations->map(fn ($loc) => [
                     'id' => $loc->id,
                     'branch_name' => $loc->branch_name,

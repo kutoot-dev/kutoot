@@ -20,8 +20,6 @@ class SponsorFactory extends Factory
         return [
             'name' => fake()->company(),
             'type' => fake()->randomElement(['Sponsor', 'Partner']),
-            'logo' => fake()->imageUrl(200, 200),
-            'banner' => fake()->imageUrl(800, 300),
             'link' => fake()->url(),
             'serial' => fake()->numberBetween(1, 100),
             'is_active' => true,
@@ -30,8 +28,8 @@ class SponsorFactory extends Factory
 
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes): array => [
-            'is_active' => false,
+        return $this->state(fn(array $attributes): array => [
+        'is_active' => false,
         ]);
     }
 }

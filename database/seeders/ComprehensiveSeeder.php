@@ -37,6 +37,7 @@ use App\Models\StoreBanner;
 use App\Models\SubscriptionPlan;
 use App\Models\Tag;
 use App\Models\Transaction;
+use App\Models\HeroSetting;
 use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Database\Seeder;
@@ -72,11 +73,11 @@ class ComprehensiveSeeder extends Seeder
 
         $campaignCategories = [];
         foreach ([
-            ['name' => 'Automotive', 'slug' => 'automotive', 'icon' => '🚗'],
-            ['name' => 'Electronics', 'slug' => 'electronics', 'icon' => '📱'],
-            ['name' => 'Real Estate', 'slug' => 'real-estate', 'icon' => '🏠'],
-            ['name' => 'Lifestyle', 'slug' => 'lifestyle', 'icon' => '💎'],
-            ['name' => 'Food & Dining', 'slug' => 'food-dining', 'icon' => '🍕'],
+            ['name' => 'Automotive', 'slug' => 'automotive'],
+            ['name' => 'Electronics', 'slug' => 'electronics'],
+            ['name' => 'Real Estate', 'slug' => 'real-estate'],
+            ['name' => 'Lifestyle', 'slug' => 'lifestyle'],
+            ['name' => 'Food & Dining', 'slug' => 'food-dining'],
         ] as $cat) {
             $campaignCategories[$cat['slug']] = CampaignCategory::firstOrCreate(
                 ['slug' => $cat['slug']],
@@ -107,7 +108,7 @@ class ComprehensiveSeeder extends Seeder
         // ───────────────────────────────────────────────
         $this->command?->info('Seeding merchant categories...');
 
-        $imagePath = 'merchant-categories/icons_grid.png';
+
         $merchantCategories = [];
         foreach ([
             ['name' => 'Restaurant', 'serial' => 1],
@@ -123,8 +124,8 @@ class ComprehensiveSeeder extends Seeder
                 ['name' => $cat['name']],
                 [
                     'serial' => $cat['serial'],
-                    'image' => $imagePath,
-                    'icon' => $imagePath,
+
+
                     'is_active' => true,
                 ],
             );
@@ -247,6 +248,15 @@ class ComprehensiveSeeder extends Seeder
             ],
         ];
 
+        // Campaign images mapping
+        $campaignImages = [
+            'iphone' => 'iphone_campaign.png',
+            'jewellery' => 'jewellery_campaign.png',
+            'bmw_bike' => 'bmw_bike_campaign.png',
+            'tata_sierra' => 'tata_sierra_campaign.png',
+            'villa' => 'villa_campaign.png',
+        ];
+
         $campaigns = [];
         foreach ($campaignDefs as $key => $def) {
             $campaigns[$key] = Campaign::updateOrCreate(
@@ -273,6 +283,16 @@ class ComprehensiveSeeder extends Seeder
                     'is_premium' => $def['is_premium'],
                 ],
             );
+
+            // Attach campaign image
+            if (isset($campaignImages[$key])) {
+                $imgPath = public_path('images/seeders/' . $campaignImages[$key]);
+                if (file_exists($imgPath) && $campaigns[$key]->getFirstMedia('image') === null) {
+                    $campaigns[$key]->addMedia($imgPath)
+                        ->preservingOriginal()
+                        ->toMediaCollection('image');
+                }
+            }
         }
 
         // ───────────────────────────────────────────────
@@ -399,16 +419,13 @@ class ComprehensiveSeeder extends Seeder
         $this->command?->info('Seeding merchants...');
 
         $merchantDefs = [
-            ['name' => 'Taj Darbar', 'slug' => 'taj-darbar', 'category' => 'Restaurant'],
-            ['name' => 'Reliance Fresh', 'slug' => 'reliance-fresh', 'category' => 'Grocery'],
-            ['name' => 'Lakme Salon', 'slug' => 'lakme-salon', 'category' => 'Salon'],
-            ['name' => 'Chai Point', 'slug' => 'chai-point', 'category' => 'Cafe'],
-            ['name' => 'Croma Electronics', 'slug' => 'croma-electronics', 'category' => 'Electronics'],
-            ['name' => 'Fabindia', 'slug' => 'fabindia', 'category' => 'Fashion'],
+            ['name' => 'Taj Darbar', 'slug' => 'taj-darbar', 'category' => 'Restaurant', 'image' => 'taj_darbar.png'],
+            ['name' => 'Reliance Fresh', 'slug' => 'reliance-fresh', 'category' => 'Grocery', 'image' => 'reliance_fresh.png'],
+            ['name' => 'Lakme Salon', 'slug' => 'lakme-salon', 'category' => 'Salon', 'image' => 'lakme_salon.png'],
+            ['name' => 'Chai Point', 'slug' => 'chai-point', 'category' => 'Cafe', 'image' => 'chai_point.png'],
+            ['name' => 'Croma Electronics', 'slug' => 'croma-electronics', 'category' => 'Electronics', 'image' => 'croma.png'],
+            ['name' => 'Fabindia', 'slug' => 'fabindia', 'category' => 'Fashion', 'image' => 'fabindia.png'],
         ];
-
-        // Use the kutoot logo as merchant logo (from public/images)
-        $logoPath = public_path('images/kutoot-full-logo.png');
 
         $merchants = [];
         foreach ($merchantDefs as $def) {
@@ -420,7 +437,8 @@ class ComprehensiveSeeder extends Seeder
                 ],
             );
 
-            // Attach logo from public/images folder
+            // Attach merchant-specific logo from seeders folder
+            $logoPath = public_path('images/seeders/' . $def['image']);
             if (file_exists($logoPath) && $merchant->getFirstMedia('logo') === null) {
                 $merchant->addMedia($logoPath)
                     ->preservingOriginal()
@@ -929,11 +947,15 @@ class ComprehensiveSeeder extends Seeder
             ['title' => 'All Access Pass ₹99', 'subtitle' => 'Unlock every campaign', 'link_url' => '/plans', 'link_text' => 'Subscribe Now'],
         ];
 
-        // Images from frontend public folder mapped to banners
-        $bannerImages = [
-            public_path('images/kutoot-full-logo.png'),
+        // Marketing banner images mapped to campaign themes
+        $marketingBannerImages = [
+            'iphone_campaign.png',
+            'bmw_bike_campaign.png',
+            'tata_sierra_campaign.png',
+            'jewellery_campaign.png',
+            'villa_campaign.png',
+            'all_access_banner.png',
         ];
-        $bannerImagePath = $bannerImages[0];
 
         foreach ($marketingBannerDefs as $idx => $banner) {
             $mb = MarketingBanner::updateOrCreate(
@@ -941,6 +963,7 @@ class ComprehensiveSeeder extends Seeder
                 array_merge($banner, ['sort_order' => $idx + 1, 'is_active' => true]),
             );
 
+            $bannerImagePath = public_path('images/seeders/' . $marketingBannerImages[$idx]);
             if (file_exists($bannerImagePath) && $mb->getFirstMedia('image') === null) {
                 $mb->addMedia($bannerImagePath)
                     ->preservingOriginal()
@@ -962,14 +985,25 @@ class ComprehensiveSeeder extends Seeder
             ['title' => 'Fabindia — Ethnic Fashion', 'alt_text' => 'Fabindia clothing store', 'link_url' => '/stores/fabindia'],
         ];
 
+        // Store banner images mapped to merchants
+        $storeBannerImages = [
+            'taj_darbar.png',
+            'reliance_fresh.png',
+            'lakme_salon.png',
+            'chai_point.png',
+            'croma.png',
+            'fabindia.png',
+        ];
+
         foreach ($storeBannerDefs as $idx => $banner) {
             $sb = StoreBanner::updateOrCreate(
                 ['title' => $banner['title']],
                 array_merge($banner, ['sort_order' => $idx + 1, 'is_active' => true]),
             );
 
-            if (file_exists($bannerImagePath) && $sb->getFirstMedia('image') === null) {
-                $sb->addMedia($bannerImagePath)
+            $storeBannerImagePath = public_path('images/seeders/' . $storeBannerImages[$idx]);
+            if (file_exists($storeBannerImagePath) && $sb->getFirstMedia('image') === null) {
+                $sb->addMedia($storeBannerImagePath)
                     ->preservingOriginal()
                     ->toMediaCollection('image');
             }
@@ -987,14 +1021,23 @@ class ComprehensiveSeeder extends Seeder
             ['title' => 'Refer & Earn Stamps', 'link_url' => '/referral', 'link_text' => 'Invite Friends'],
         ];
 
+        // Featured banner images
+        $featuredBannerImages = [
+            'all_access_banner.png',
+            'weekend_sale.png',
+            'new_partners.png',
+            'refer_earn.png',
+        ];
+
         foreach ($featuredBannerDefs as $idx => $banner) {
             $fb = FeaturedBanner::updateOrCreate(
                 ['title' => $banner['title']],
                 array_merge($banner, ['sort_order' => $idx + 1, 'is_active' => true]),
             );
 
-            if (file_exists($bannerImagePath) && $fb->getFirstMedia('image') === null) {
-                $fb->addMedia($bannerImagePath)
+            $featuredImagePath = public_path('images/seeders/' . $featuredBannerImages[$idx]);
+            if (file_exists($featuredImagePath) && $fb->getFirstMedia('image') === null) {
+                $fb->addMedia($featuredImagePath)
                     ->preservingOriginal()
                     ->toMediaCollection('image');
             }
@@ -1012,14 +1055,23 @@ class ComprehensiveSeeder extends Seeder
             ['title' => 'Tata Sierra & Villa Campaigns Going Strong', 'description' => 'Over 500 users have joined the Tata Sierra and Villa campaigns. Upgrade to VIP or Elite to participate in these exclusive draws.', 'link_url' => '/campaigns', 'published_at' => now()->subDays(1)],
         ];
 
+        // News article images
+        $newsImages = [
+            'iphone_campaign.png',
+            'new_partners.png',
+            'all_access_banner.png',
+            'tata_sierra_campaign.png',
+        ];
+
         foreach ($newsDefs as $idx => $news) {
             $na = NewsArticle::updateOrCreate(
                 ['title' => $news['title']],
                 array_merge($news, ['sort_order' => $idx + 1, 'is_active' => true]),
             );
 
-            if (file_exists($bannerImagePath) && $na->getFirstMedia('image') === null) {
-                $na->addMedia($bannerImagePath)
+            $newsImagePath = public_path('images/seeders/' . $newsImages[$idx]);
+            if (file_exists($newsImagePath) && $na->getFirstMedia('image') === null) {
+                $na->addMedia($newsImagePath)
                     ->preservingOriginal()
                     ->toMediaCollection('image');
             }
@@ -1094,6 +1146,24 @@ class ComprehensiveSeeder extends Seeder
         );
 
         // ───────────────────────────────────────────────
+        // 26. Hero Settings (global hero banner text)
+        // ───────────────────────────────────────────────
+        $this->command?->info('Seeding hero settings...');
+
+        // include a locale field so we can seed per language. if you only
+        // support the default locale you can use config('app.locale') here
+        // or adjust the loop to iterate over config('app.supported_locales').
+        foreach (['en'] as $locale) {
+            HeroSetting::updateOrCreate(
+                ['is_active' => true, 'locale' => $locale],
+                [
+                    'title' => 'Shop, Collect Stamps & Win Big Rewards!',
+                    'description' => 'Join thousands of smart shoppers earning stamps at your favourite stores. Redeem for iPhones, cars, jewellery & more.',
+                ],
+            );
+        }
+
+        // ───────────────────────────────────────────────
         // Done!
         // ───────────────────────────────────────────────
         $this->command?->info('');
@@ -1122,3 +1192,6 @@ class ComprehensiveSeeder extends Seeder
         $this->command?->info('    User5:    user5@kutoot.com    (Elite plan)');
     }
 }
+
+
+

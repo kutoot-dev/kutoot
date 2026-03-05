@@ -25,7 +25,8 @@ class MerchantForm
                     ->collection('logo')
                     ->image()
                     ->conversion('thumb')
-                    ->responsiveImages(),
+                    ->responsiveImages()
+                    ->maxSize(config('upload.max_file_size_kb')),
                 Toggle::make('is_active')
                     ->required(),
 
@@ -41,7 +42,7 @@ class MerchantForm
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',
                             ])
-                            ->maxSize(102400)
+                            ->maxSize(config('upload.max_file_size_kb'))
                             ->conversion('thumb')
                             ->responsiveImages()
                             ->customHeaders(['CacheControl' => 'max-age=86400']),

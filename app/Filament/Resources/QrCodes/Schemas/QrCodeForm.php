@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -34,6 +35,10 @@ class QrCodeForm
                     ->searchable()
                     ->preload()
                     ->required(fn (string $operation) => $operation === 'edit'),
+                Toggle::make('is_primary')
+                    ->label('Is Primary QR Code')
+                    ->helperText('Designates this QR code as the primary one for the selected location.')
+                    ->visible(fn(Get $get) => filled($get('merchant_location_id'))),
                 Select::make('status')
                     ->options(QrCodeStatus::class)
                     ->default(QrCodeStatus::Available)

@@ -24,6 +24,7 @@ class VerifyPaymentRequest extends FormRequest
             'campaign_selections' => ['sometimes', 'array'],
             'campaign_selections.*.campaign_id' => ['required_with:campaign_selections', 'exists:campaigns,id'],
             'campaign_selections.*.stamp_count' => ['sometimes', 'integer', 'min:0'],
+            'campaign_id' => ['sometimes', 'nullable', 'exists:campaigns,id'],
         ];
     }
 

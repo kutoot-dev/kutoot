@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FeaturedBannerController;
+use App\Http\Controllers\Api\V1\HeroSettingController;
 use App\Http\Controllers\Api\V1\MarketingBannerController;
 use App\Http\Controllers\Api\V1\MerchantCategoryController;
 use App\Http\Controllers\Api\V1\MerchantLocationApplicationController;
@@ -74,6 +75,10 @@ Route::get('/campaigns/{campaign}', [CampaignController::class, 'show'])
 // Subscription plans (public, no auth needed)
 Route::get('/subscriptions/plans', [SubscriptionController::class, 'plans'])
     ->name('api.v1.subscriptions.plans');
+
+// ── Hero Settings (public, no auth) ─────────────────────────────────────
+Route::get('/hero-settings', [HeroSettingController::class, 'index'])
+    ->name('api.v1.hero-settings.index');
 
 // ── Marketing (public, no auth) ─────────────────────────────────────────
 Route::get('/marketing-banners', [MarketingBannerController::class, 'index'])
@@ -207,14 +212,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Coupons
     Route::get('/coupons', [CouponController::class, 'index'])
         ->name('api.v1.coupons.index');
-    Route::get('/coupons/{coupon}', [CouponController::class, 'show'])
-        ->name('api.v1.coupons.show');
-    Route::post('/coupons/{coupon}/redeem', [CouponController::class, 'redeem'])
-        ->name('api.v1.coupons.redeem');
     Route::post('/coupons/verify-payment', [CouponController::class, 'verifyPayment'])
         ->name('api.v1.coupons.verify-payment');
     Route::post('/coupons/calculate', [CouponController::class, 'calculate'])
         ->name('api.v1.coupons.calculate');
+    Route::post('/coupons/pay-without-coupon', [CouponController::class, 'payWithoutCoupon'])
+        ->name('api.v1.coupons.pay-without-coupon');
+    Route::get('/coupons/{coupon}', [CouponController::class, 'show'])
+        ->name('api.v1.coupons.show');
+    Route::post('/coupons/{coupon}/redeem', [CouponController::class, 'redeem'])
+        ->name('api.v1.coupons.redeem');
 
     // Subscriptions (auth-protected)
     Route::get('/subscriptions/current', [SubscriptionController::class, 'current'])
@@ -225,6 +232,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('api.v1.subscriptions.verify-payment');
     Route::post('/subscriptions/primary-campaign', [SubscriptionController::class, 'setPrimaryCampaign'])
         ->name('api.v1.subscriptions.primary-campaign');
+    Route::get('/subscriptions/available-campaigns', [SubscriptionController::class, 'availableCampaigns'])
+        ->name('api.v1.subscriptions.available-campaigns');
 
     // Stamps
     Route::get('/stamps', [StampController::class, 'index'])

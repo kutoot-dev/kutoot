@@ -26,6 +26,8 @@ class MerchantLocationResource extends JsonResource
             'deduct_commission_from_target' => $this->deduct_commission_from_target,
             'merchant' => new MerchantResource($this->whenLoaded('merchant')),
             'tags' => TagResource::collection($this->whenLoaded('tags')),
+            'qr_codes' => QrCodeResource::collection($this->whenLoaded('qrCodes')),
+            'primary_qr_code' => new QrCodeResource($this->whenLoaded('primaryQrCode')),
             'state' => $this->whenLoaded('state', fn () => ['id' => $this->state->id, 'name' => $this->state->name]),
             'city' => $this->whenLoaded('city', fn () => ['id' => $this->city->id, 'name' => $this->city->name]),
             'media' => $this->getMedia('media')->map(fn ($media) => [

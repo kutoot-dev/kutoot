@@ -685,6 +685,9 @@ Transaction history:
 
 The admin panel is built on **Filament v5** — a server-rendered admin framework. It provides comprehensive back-office management via a sidebar-driven interface.
 
+> **Note:** Media columns now render a video placeholder when only videos are present, making it easier to identify video content at a glance.
+
+
 ### 12.1 Resource Management (16 Resources)
 
 | Resource | What Admins Can Manage |

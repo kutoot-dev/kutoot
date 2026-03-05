@@ -199,32 +199,55 @@ class ViewMerchantApplication extends ViewRecord
             ]);
 
             // 7. Send credentials via email
-            try {
-                Mail::to($app->owner_email)->send(
-                    new MerchantCredentialsMail($app->store_name, $username, $plainPassword)
-                );
-                Log::info("Credentials email sent successfully to {$app->owner_email}");
-            } catch (\Exception $e) {
-                Log::error("Failed to send credentials email to {$app->owner_email}: " . $e->getMessage());
-                // Don't fail the entire transaction for email failure
+            $emailSent = false;
+            if ($app->owner_email) {
+                try {
+                    Mail::to($app->owner_email)->send(
+                        new MerchantCredentialsMail($app->store_name, $username, $plainPassword)
+                    );
+                    Log::info("Credentials email sent successfully to {$app->owner_email}");
+                    $emailSent = true;
+                } catch (\Exception $e) {
+                    Log::error("Failed to send credentials email to {$app->owner_email}: " . $e->getMessage());
+                }
             }
 
             // 8. Send credentials via SMS
-            try {
-                $sms = app(SmsContract::class);
-                $message = "Welcome to Kutoot! Your store \"{$app->store_name}\" is approved. Login: Username: {$username}, Password: {$plainPassword}. Change your password after first login. -Team Kutoot";
-                $sms->send($app->owner_mobile, $message);
-                Log::info("Credentials SMS sent successfully to {$app->owner_mobile}");
-            } catch (\Exception $e) {
-                Log::error("Failed to send credentials SMS to {$app->owner_mobile}: " . $e->getMessage());
-                // Don't fail the entire transaction for SMS failure
+            $smsSent = false;
+            if ($app->owner_mobile) {
+                try {
+                    $sms = app(SmsContract::class);
+                    $message = "Welcome to Kutoot! Your store \"{$app->store_name}\" is approved. Login: Username: {$username}, Password: {$plainPassword}. Change your password after first login. -Team Kutoot";
+                    $sms->send($app->owner_mobile, $message);
+                    Log::info("Credentials SMS sent successfully to {$app->owner_mobile}");
+                    $smsSent = true;
+                } catch (\Exception $e) {
+                    Log::error("Failed to send credentials SMS to {$app->owner_mobile}: " . $e->getMessage());
+                }
             }
 
-            Notification::make()
-                ->title('Application Approved!')
-                ->body("Store \"{$app->store_name}\" created successfully. Username: {$username}. Credentials sent to {$app->owner_email} & {$app->owner_mobile}.")
-                ->success()
-                ->send();
+            // Notify admin about delivery status
+            if (! $emailSent && ! $smsSent) {
+                Notification::make()
+                    ->title('Application Approved — Credentials NOT Delivered')
+                    ->body("Store \"{$app->store_name}\" created (Username: {$username}), but BOTH email and SMS failed. Please share credentials manually.")
+                    ->warning()
+                    ->persistent()
+                    ->send();
+            } elseif (! $emailSent || ! $smsSent) {
+                $failedChannel = ! $emailSent ? 'email' : 'SMS';
+                Notification::make()
+                    ->title('Application Approved — Partial Delivery')
+                    ->body("Store \"{$app->store_name}\" created (Username: {$username}). Credentials sent via " . ($emailSent ? 'email' : 'SMS') . " but {$failedChannel} delivery failed.")
+                    ->warning()
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('Application Approved!')
+                    ->body("Store \"{$app->store_name}\" created successfully. Username: {$username}. Credentials sent to {$app->owner_email} & {$app->owner_mobile}.")
+                    ->success()
+                    ->send();
+            }
         });
     }
 }

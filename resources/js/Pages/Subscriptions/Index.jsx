@@ -1,4 +1,4 @@
-﻿import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import CurrencySymbol from '@/Components/CurrencySymbol';
@@ -100,15 +100,15 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
     };
 
     const tierConfig = [
-        { bg: 'from-lucky-50 to-lucky-100', accent: 'text-lucky-600', border: 'border-lucky-300', badge: 'bg-lucky-100 text-lucky-700', icon: '🎫', ring: 'ring-lucky-200' },
-        { bg: 'from-ticket-50 to-ticket-100', accent: 'text-ticket-600', border: 'border-ticket-300', badge: 'bg-ticket-100 text-ticket-700', icon: '⭐', ring: 'ring-ticket-200', popular: true },
-        { bg: 'from-yellow-50 to-amber-100', accent: 'text-amber-600', border: 'border-yellow-400', badge: 'bg-yellow-100 text-amber-700', icon: '👑', ring: 'ring-yellow-200' },
+        { bg: 'from-lucky-50 to-lucky-100', accent: 'text-lucky-600', border: 'border-lucky-300', badge: 'bg-lucky-100 text-lucky-700', icon: '??', ring: 'ring-lucky-200' },
+        { bg: 'from-ticket-50 to-ticket-100', accent: 'text-ticket-600', border: 'border-ticket-300', badge: 'bg-ticket-100 text-ticket-700', icon: '?', ring: 'ring-ticket-200', popular: true },
+        { bg: 'from-yellow-50 to-amber-100', accent: 'text-amber-600', border: 'border-yellow-400', badge: 'bg-yellow-100 text-amber-700', icon: '??', ring: 'ring-yellow-200' },
     ];
 
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="text-xl font-bold leading-tight text-white flex items-center gap-2">⭐ Subscription Plans</h2>}
+            header={<h2 className="text-xl font-bold leading-tight text-white flex items-center gap-2">? Subscription Plans</h2>}
         >
             <Head title="Subscriptions" />
 
@@ -141,7 +141,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                     {tier.popular && !isCurrent && (
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                                             <span className="bg-gradient-to-r from-ticket-500 to-ticket-600 text-white px-4 py-1 rounded-full text-xs font-bold shadow-md whitespace-nowrap">
-                                                🔥 BEST VALUE
+                                                ?? BEST VALUE
                                             </span>
                                         </div>
                                     )}
@@ -149,7 +149,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                     {/* Current badge */}
                                     {isCurrent && (
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                                            <span className="golden-badge px-4 py-1 rounded-full text-xs whitespace-nowrap">⭐ CURRENT PLAN</span>
+                                            <span className="golden-badge px-4 py-1 rounded-full text-xs whitespace-nowrap">? CURRENT PLAN</span>
                                         </div>
                                     )}
 
@@ -168,7 +168,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                         <div className="flex gap-2 sm:gap-3">
                                             <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 text-center border border-dashed border-lucky-200">
                                                 <p className={`text-xl sm:text-2xl font-bold ${tier.accent}`}>{plan.stamps_on_purchase}</p>
-                                                <p className="text-xs text-gray-500 font-medium">🎫 Bonus</p>
+                                                <p className="text-xs text-gray-500 font-medium">?? Bonus</p>
                                             </div>
                                             <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 text-center border border-dashed border-lucky-200">
                                                 <p className={`text-xl sm:text-2xl font-bold ${tier.accent}`}>{plan.stamps_per_denomination}</p>
@@ -187,9 +187,9 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                     {/* Plan features */}
                                     <div className="p-5 sm:p-6">
                                         <ul className="text-sm text-gray-600 space-y-3 mb-6">
-                                            <FeatureRow icon="🎟️" label="Max Discounted Bills" value={plan.max_discounted_bills} />
-                                            <FeatureRow icon="💰" label="Max Redeemable" value={<><CurrencySymbol />{parseFloat(plan.max_redeemable_amount).toFixed(0)}</>} />
-                                            <FeatureRow icon="⏳" label="Validity" value={plan.duration_days ? `${plan.duration_days} days` : '∞'} last />
+                                            <FeatureRow icon="???" label="Max Discounted Bills" value={plan.max_discounted_bills} />
+                                            <FeatureRow icon="??" label="Max Redeemable" value={<><CurrencySymbol />{parseFloat(plan.max_redeemable_amount).toFixed(0)}</>} />
+                                            <FeatureRow icon="?" label="Validity" value={plan.duration_days ? `${plan.duration_days} days` : '8'} last />
                                         </ul>
 
                                         {/* Action button */}
@@ -201,7 +201,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                                 </button>
                                                 {currentSubscription.expires_at && (
                                                     <p className="text-center text-xs text-gray-400 mt-2 bg-gray-50 rounded-full py-1.5 px-3">
-                                                        ⏳ Expires: <span className="font-bold">{currentSubscription.expires_at}</span>
+                                                        ? Expires: <span className="font-bold">{currentSubscription.expires_at}</span>
                                                     </p>
                                                 )}
                                             </div>
@@ -212,7 +212,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                                 href={route('login')}
                                                 className="w-full block text-center lucky-gradient text-white font-bold py-2.5 px-4 rounded-full transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm"
                                             >
-                                                🔑 Login to Upgrade
+                                                ?? Login to Upgrade
                                             </Link>
                                         ) : isUpgradable ? (
                                             <button
@@ -226,7 +226,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                                         Processing...
                                                     </>
                                                 ) : (
-                                                    '🚀 Upgrade'
+                                                    '?? Upgrade'
                                                 )}
                                             </button>
                                         ) : (
@@ -242,7 +242,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                     {!isLoggedIn && (
                         <div className="mt-10 text-center">
                             <div className="inline-block coupon-card p-6 sm:p-8">
-                                <span className="text-3xl block mb-2">🔑</span>
+                                <span className="text-3xl block mb-2">??</span>
                                 <h3 className="font-display text-lg text-gray-900 mb-1">Sign up to unlock all plans</h3>
                                 <p className="text-sm text-gray-500 mb-4 max-w-sm">
                                     Create a free account to upgrade your plan, earn stamps, and access exclusive discounts.
@@ -264,7 +264,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="coupon-card w-full max-w-md p-6">
                         <h3 className="font-display text-xl text-gray-900 mb-2 flex items-center gap-2">
-                            <span className="text-2xl">🎯</span> Select Your Campaign
+                            <span className="text-2xl">??</span> Select Your Campaign
                         </h3>
                         <p className="text-sm text-gray-500 mb-5">Choose the campaign you'd like to collect stamps for:</p>
 
@@ -300,7 +300,7 @@ export default function Index({ auth, plans, currentSubscription, primaryCampaig
                                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             }`}
                         >
-                            ✅ Confirm Campaign
+                            ? Confirm Campaign
                         </button>
                     </div>
                 </div>

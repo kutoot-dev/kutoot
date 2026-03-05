@@ -239,20 +239,40 @@ class Campaign extends Model implements HasMedia
                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                 'video/mp4', 'video/webm', 'video/quicktime',
             ]);
+
+        $this->addMediaCollection('sponsor_image')
+            ->acceptsMimeTypes([
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+            ])
+            ->singleFile();
     }
 
     public function registerMediaConversions(?Media $media = null): void
     {
+        // Conversions for 'images' collection (images and videos)
         $this->addMediaConversion('thumb')
             ->fit(Fit::Contain, 300, 300)
             ->format('webp')
-            ->quality(80)
-            ->nonQueued();
+            ->quality(90)
+            ->nonOptimized()
+            ->nonQueued()
+            ->performOnCollections('images');
 
         $this->addMediaConversion('preview')
-            ->fit(Fit::Contain, 800, 600)
+            ->fit(Fit::Contain, 1920, 1080)
             ->format('webp')
-            ->quality(85)
-            ->withResponsiveImages();
+            ->quality(95)
+            ->nonOptimized()
+            ->withResponsiveImages()
+            ->performOnCollections('images');
+
+        // Conversion for 'sponsor_image' collection
+        $this->addMediaConversion('sponsor_thumb')
+            ->fit(Fit::Contain, 400, 224)
+            ->format('webp')
+            ->quality(90)
+            ->nonOptimized()
+            ->nonQueued()
+            ->performOnCollections('sponsor_image');
     }
 }

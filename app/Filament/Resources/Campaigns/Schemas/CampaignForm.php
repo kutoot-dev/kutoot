@@ -44,7 +44,9 @@ class CampaignForm
                     ->default('active')
                     ->required(),
                 DatePicker::make('start_date')
-                    ->required(),
+                    ->required()
+                    ->minDate(now()->startOfDay())
+                    ->rule('after_or_equal:today'),
                 TextInput::make('reward_cost_target')
                     ->required()
                     ->numeric(),
@@ -93,10 +95,35 @@ class CampaignForm
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',
                             ])
-                            ->maxSize(102400)
+                            ->maxSize(config('upload.max_file_size_kb'))
                             ->conversion('thumb')
                             ->responsiveImages()
-                            ->customHeaders(['CacheControl' => 'max-age=86400']),
+                            ->customHeaders(['CacheControl' => 'max-age=86400'])
+                            ->helperText('Upload at least one image; videos will play on hover.')
+                            ->rules([
+                                fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                    if (is_array($value) && count($value) > 0) {
+                                        $hasImage = collect($value)->contains(fn($file) => Str::startsWith($file->getClientMimeType(), 'image/'));
+                                        if (! $hasImage) {
+                                            $fail('At least one image is required; videos will play on hover.');
+                                        }
+                                    }
+                                },
+                            ]),
+                    ]),
+
+                Section::make('Sponsor Image')
+                    ->description('Upload a sponsored by image for this campaign (16:9 aspect ratio).')
+                    ->collapsible()
+                    ->components([
+                        SpatieMediaLibraryFileUpload::make('sponsor_image')
+                            ->collection('sponsor_image')
+                            ->acceptedFileTypes([
+                                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+                            ])
+                            ->maxSize(config('upload.max_file_size_kb'))
+                            ->conversion('sponsor_thumb')
+                            ->helperText('Recommended size: 400x224px (16:9 aspect ratio).'),
                     ]),
 
                 Section::make('Stamp Code Configuration')

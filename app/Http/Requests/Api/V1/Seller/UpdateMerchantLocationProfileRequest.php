@@ -26,7 +26,7 @@ class UpdateMerchantLocationProfileRequest extends FormRequest
             'state_id' => ['sometimes', 'nullable', 'integer', 'exists:'.config('world.connection', 'mysql').'.states,id'],
             'city_id' => ['sometimes', 'nullable', 'integer', 'exists:'.config('world.connection', 'mysql').'.cities,id'],
             'media' => ['sometimes', 'array', 'max:10'],
-            'media.*' => ['image', 'max:5120'],
+            'media.*' => ['image', 'max:' . config('upload.max_file_size_kb')],
         ];
     }
 }

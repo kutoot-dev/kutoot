@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\MerchantCategories\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -16,14 +16,18 @@ class MerchantCategoryForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                FileUpload::make('image')
+                SpatieMediaLibraryFileUpload::make('image')
+                    ->collection('image')
                     ->image()
-                    ->directory('merchant-categories')
-                    ->maxSize(2048),
-                FileUpload::make('icon')
+                    ->conversion('thumb')
+                    ->responsiveImages()
+                    ->maxSize(config('upload.max_file_size_kb')),
+                SpatieMediaLibraryFileUpload::make('icon')
+                    ->collection('icon')
                     ->image()
-                    ->directory('merchant-categories-icons')
-                    ->maxSize(1024),
+                    ->conversion('thumb')
+                    ->responsiveImages()
+                    ->maxSize(config('upload.max_file_size_kb')),
                 TextInput::make('serial')
                     ->required()
                     ->numeric()

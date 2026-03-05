@@ -33,15 +33,18 @@ class MerchantLocationForm
                     ->multiple()
                     ->preload(),
                 Select::make('state_id')
-                    ->relationship('state', 'name')
+                    ->relationship('state', 'name', fn (Builder $query) =>
+                        $query->where('country_id', 102) // India only
+                    )
                     ->label('State')
                     ->searchable()
                     ->preload()
                     ->live()
                     ->nullable(),
                 Select::make('city_id')
-                    ->relationship('city', 'name', fn (Builder $query, Get $get) => 
-                        $query->when($get('state_id'), fn ($query, $stateId) => $query->where('state_id', $stateId))
+                    ->relationship('city', 'name', fn (Builder $query, Get $get) =>
+                        $query->where('country_id', 102) // India only
+                            ->when($get('state_id'), fn ($query, $stateId) => $query->where('state_id', $stateId))
                     )
                     ->label('City')
                     ->searchable()
@@ -126,7 +129,7 @@ class MerchantLocationForm
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',
                             ])
-                            ->maxSize(102400)
+                            ->maxSize(config('upload.max_file_size_kb'))
                             ->conversion('thumb')
                             ->responsiveImages()
                             ->customHeaders(['CacheControl' => 'max-age=86400']),

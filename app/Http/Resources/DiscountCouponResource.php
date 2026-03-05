@@ -15,7 +15,7 @@ class DiscountCouponResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
@@ -36,5 +36,26 @@ class DiscountCouponResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
+
+        // Dynamic attributes set by CouponController
+        if ($this->resource->getAttributes() !== [] || method_exists($this->resource, 'getAttribute')) {
+            if ($this->resource->getAttribute('is_eligible') !== null) {
+                $data['is_eligible'] = (bool) $this->resource->getAttribute('is_eligible');
+            }
+            if ($this->resource->getAttribute('remaining_usage') !== null) {
+                $data['remaining_usage'] = (int) $this->resource->getAttribute('remaining_usage');
+            }
+            if ($this->resource->getAttribute('segment') !== null) {
+                $data['segment'] = $this->resource->getAttribute('segment');
+            }
+            if ($this->resource->getAttribute('required_plan') !== null) {
+                $data['required_plan'] = $this->resource->getAttribute('required_plan');
+            }
+            if ($this->resource->getAttribute('user_redemptions_count') !== null) {
+                $data['user_redemptions_count'] = (int) $this->resource->getAttribute('user_redemptions_count');
+            }
+        }
+
+        return $data;
     }
 }

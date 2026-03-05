@@ -41,7 +41,7 @@ class ProfileUpdateRequest extends FormRequest
             'city_id' => ['nullable', 'integer', Rule::exists("{$worldConnection}.cities", 'id')],
             'pin_code' => ['nullable', 'string', 'max:20'],
             'full_address' => ['nullable', 'string', 'max:1000'],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'profile_picture' => ['nullable', 'image', 'max:' . config('upload.max_file_size_kb')],
         ];
     }
 

@@ -54,6 +54,17 @@ class CampaignResource extends JsonResource
                 'mime_type' => $m->mime_type,
                 'size' => $m->size,
             ])),
+            'sponsor_image' => $this->when(
+                $this->getFirstMedia('sponsor_image'),
+                fn () => [
+                    'id' => $this->getFirstMedia('sponsor_image')->id,
+                    'url' => $this->getFirstMedia('sponsor_image')->getUrl(),
+                    'thumb' => $this->getFirstMedia('sponsor_image')->getUrl('sponsor_thumb'),
+                    'name' => $this->getFirstMedia('sponsor_image')->name,
+                    'mime_type' => $this->getFirstMedia('sponsor_image')->mime_type,
+                    'size' => $this->getFirstMedia('sponsor_image')->size,
+                ]
+            ),
             'plans' => CampaignResource::collection($this->whenLoaded('plans')),
             'stamps_count' => $this->whenCounted('stamps'),
             'subscribers_count' => $this->whenCounted('subscribers'),

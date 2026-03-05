@@ -24,8 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/executive/qr', [\App\Http\Controllers\ExecutiveQrController::class, 'index'])->name('executive.qr.index');
     Route::get('/executive/qr/{qrCode}/download', [\App\Http\Controllers\ExecutiveQrController::class, 'download'])->name('executive.qr.download');
     Route::post('/executive/qr/link', [\App\Http\Controllers\ExecutiveQrController::class, 'link'])->name('executive.qr.link');
-    Route::post('/admin/qr/generate', [\App\Http\Controllers\ExecutiveQrController::class, 'generateBatch'])->name('admin.qr.generate');
-
+    Route::post('/admin/qr/generate', [\App\Http\Controllers\ExecutiveQrController::class, 'generateBatch'])->name('admin.qr.generate');    Route::get('/admin/qr/bulk-print', [\App\Http\Controllers\QrCodePrintController::class, 'bulkPrint'])->name('qr-code.bulk-print');
     Route::get('/q/{token}', [\App\Http\Controllers\QrScanController::class, 'scan'])->name('qr.scan');
 
     // Subscriptions

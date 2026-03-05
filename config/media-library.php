@@ -12,7 +12,7 @@ return [
      * The maximum file size of an item in bytes.
      * Adding a larger file will result in an exception.
      */
-    'max_file_size' => 1024 * 1024 * 100, // 100MB (supports video uploads)
+    'max_file_size' => (int) env('MEDIA_MAX_FILE_SIZE', 1024 * 1024 * 100), // 100MB default (supports video uploads)
 
     /*
      * This queue connection will be used to generate derived and responsive images.
@@ -142,12 +142,9 @@ return [
             '-b', // required parameter for this package
             '-O3', // this produces the slowest but best results
         ],
-        Spatie\ImageOptimizer\Optimizers\Cwebp::class => [
-            '-m 6', // for the slowest compression method in order to get the best compression.
-            '-pass 10', // for maximizing the amount of analysis pass.
-            '-mt', // multithreading for some speed improvements.
-            '-q 90', // quality factor that brings the least noticeable changes.
-        ],
+        // Cwebp optimizer removed — conversions already encode to WebP via
+        // ->format('webp')->quality(). Running Cwebp after causes double
+        // compression and degrades quality.
         Spatie\ImageOptimizer\Optimizers\Avifenc::class => [
             '-a cq-level=23', // constant quality level, lower values mean better quality and greater file size (0-63).
             '-j all', // number of jobs (worker threads, "all" uses all available cores).

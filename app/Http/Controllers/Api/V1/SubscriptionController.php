@@ -292,4 +292,37 @@ class SubscriptionController extends Controller
             'message' => 'Primary campaign set successfully!',
         ]);
     }
+
+    /**
+     * Available campaigns
+     *
+     * Returns the user's subscribed active campaigns with primary flag.
+     * Used for campaign selection before stamp generation.
+     */
+    public function availableCampaigns(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $primaryCampaignId = $user->primary_campaign_id;
+
+        $campaigns = $user->campaigns()
+            ->where('is_active', true)
+            ->where('status', 'active')
+            ->withPivot('is_primary', 'subscribed_at')
+            ->get()
+            ->map(fn ($campaign) => [
+                'id' => $campaign->id,
+                'name' => $campaign->reward_name ?? $campaign->code ?? "Campaign #{$campaign->id}",
+                'code' => $campaign->code,
+                'description' => $campaign->description,
+                'stamp_target' => $campaign->stamp_target,
+                'issued_stamps' => $campaign->issued_stamps_cache,
+                'is_primary' => $campaign->id === $primaryCampaignId,
+                'image' => $campaign->getFirstMediaUrl('media', 'thumb'),
+            ]);
+
+        return response()->json([
+            'data' => $campaigns,
+            'primary_campaign_id' => $primaryCampaignId,
+        ]);
+    }
 }

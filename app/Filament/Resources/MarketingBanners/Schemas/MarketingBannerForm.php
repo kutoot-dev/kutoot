@@ -33,7 +33,7 @@ class MarketingBannerForm
                     ->validationRules(['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'])
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(2048),
+                    ->maxSize(config('upload.max_file_size_kb')),
                 Toggle::make('is_active')
                     ->default(true)
                     ->required(),

@@ -17,20 +17,6 @@ return new class extends Migration
             $table->index(['user_id', 'type', 'created_at']);
         });
 
-        // Stamps: queried by user + campaign
-        Schema::table('stamps', function (Blueprint $table) {
-            $table->index('source');
-            $table->index('created_at');
-            $table->index(['user_id', 'campaign_id']);
-        });
-
-        // Campaigns: status and is_active used in every query
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->index('status');
-            $table->index('is_active');
-            $table->index(['status', 'is_active']);
-        });
-
         // Discount coupons: active+date filtering
         Schema::table('discount_coupons', function (Blueprint $table) {
             $table->index('is_active');
@@ -67,18 +53,6 @@ return new class extends Migration
             $table->dropIndex(['created_at']);
             $table->dropIndex(['user_id', 'payment_status']);
             $table->dropIndex(['user_id', 'type', 'created_at']);
-        });
-
-        Schema::table('stamps', function (Blueprint $table) {
-            $table->dropIndex(['source']);
-            $table->dropIndex(['created_at']);
-            $table->dropIndex(['user_id', 'campaign_id']);
-        });
-
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-            $table->dropIndex(['is_active']);
-            $table->dropIndex(['status', 'is_active']);
         });
 
         Schema::table('discount_coupons', function (Blueprint $table) {

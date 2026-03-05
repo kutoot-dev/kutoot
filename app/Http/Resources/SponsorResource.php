@@ -16,8 +16,8 @@ class SponsorResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type,
-            'logo' => $this->logo,
-            'banner' => $this->banner,
+            'logo' => $this->getFirstMediaUrl('logo', 'preview') ?: null,
+            'banner' => $this->getFirstMediaUrl('banner', 'preview') ?: null,
             'link' => $this->link,
         ];
     }

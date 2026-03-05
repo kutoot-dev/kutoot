@@ -23,6 +23,7 @@ class SponsorController extends Controller
         $sponsors = Cache::remember('sponsors:active', 300, function () {
             return Sponsor::query()
                 ->where('is_active', true)
+                ->with('media')
                 ->orderBy('serial')
                 ->get();
         });
