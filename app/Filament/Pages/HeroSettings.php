@@ -3,24 +3,23 @@
 namespace App\Filament\Pages;
 
 use App\Models\HeroSetting;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form as SchemaForm;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
-class HeroSettings extends Page implements HasForms
+class HeroSettings extends Page
 {
-    use InteractsWithForms;
-
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
-    protected string $view = 'filament.pages.hero-settings';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Settings';
 
@@ -102,5 +101,29 @@ class HeroSettings extends Page implements HasForms
             ->body('The hero banner text has been updated successfully.')
             ->success()
             ->send();
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                SchemaForm::make([EmbeddedSchema::make('form')])
+                    ->id('form')
+                    ->livewireSubmitHandler('save')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment($this->getFormActionsAlignment())
+                            ->key('form-actions'),
+                    ]),
+            ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label('Save changes')
+                ->submit('save'),
+        ];
     }
 }
