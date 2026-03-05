@@ -24,7 +24,6 @@ class QrScanController extends Controller
             ])
             ->log("QR code {$qrCode->unique_code} was scanned");
 
-        return redirect()->route('coupons.index', ['location' => $qrCode->merchant_location_id])
-            ->with('message', 'Welcome to '.$qrCode->merchantLocation->branch_name);
+        return redirect()->away(config('app.frontend_url', 'http://localhost:3000') . '/kutoot-store?store_id=' . $qrCode->merchant_location_id . '&action=paybill');
     }
 }

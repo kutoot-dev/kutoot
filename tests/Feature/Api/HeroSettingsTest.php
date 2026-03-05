@@ -42,6 +42,20 @@ it('returns the active hero setting for the default app locale and honours the l
         ->assertJsonPath('data.title', 'हिंदी शीर्षक');
 });
 
+it('applies a default locale when none is provided', function () {
+    // create a setting without specifying locale; the database default should fill in
+    HeroSetting::create([
+        'title' => 'Default Locale Title',
+        'description' => 'Foo bar',
+        'is_active' => true,
+    ]);
+
+    $this->assertDatabaseHas('hero_settings', [
+        'title' => 'Default Locale Title',
+        'locale' => config('app.locale'),
+    ]);
+});
+
 it('returns null payload when no setting exists for a given locale', function () {
     // only an english record exists
     HeroSetting::create([
