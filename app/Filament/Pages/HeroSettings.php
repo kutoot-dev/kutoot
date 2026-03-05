@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\HeroSetting;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -102,5 +103,14 @@ class HeroSettings extends Page implements HasForms
             ->body('The hero banner text has been updated successfully.')
             ->success()
             ->send();
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+                ->submit('save'),
+        ];
     }
 }
