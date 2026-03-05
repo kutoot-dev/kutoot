@@ -10,6 +10,7 @@ class CreateHeroSettingsTable extends Migration
     {
         Schema::create('hero_settings', function (Blueprint $table) {
             $table->id();
+            $table->string('locale')->index();
             $table->string('title');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
