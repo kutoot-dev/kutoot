@@ -79,7 +79,17 @@ class MerchantLocationForm
                             ->maxValue(90)
                             ->step(0.000001)
                             ->placeholder('e.g. 28.613939')
-                            ->nullable(),
+                            ->nullable()
+                            ->helperText('Allow your browser to access location and the field will auto‑fill.')
+                            // automatically populate from browser geolocation when form loads if empty
+                            ->extraAttributes([
+                                'x-init' => "navigator.geolocation && navigator.geolocation.getCurrentPosition(pos => {\
+                                    if (!\$wire.get('latitude')) {\
+                                        \$wire.set('latitude', pos.coords.latitude);\
+                                        \$wire.set('longitude', pos.coords.longitude);\
+                                    }\
+                                })",
+                            ]),
                         TextInput::make('longitude')
                             ->label('Longitude')
                             ->numeric()
@@ -87,7 +97,12 @@ class MerchantLocationForm
                             ->maxValue(180)
                             ->step(0.000001)
                             ->placeholder('e.g. 77.209023')
-                            ->nullable(),
+                            ->nullable()
+                            ->helperText('Populated with browser location when available.')
+                            // keep extraAttributes so Alpine can set from latitude init above
+                            ->extraAttributes([
+                                // no additional script needed here; latitude x-init will set both fields
+                            ]),
                         TextInput::make('gst_number')
                             ->label('GST Number')
                             ->maxLength(255),
