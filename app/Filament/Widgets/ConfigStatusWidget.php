@@ -15,7 +15,12 @@ class ConfigStatusWidget extends Widget
 
     public function getViewData(): array
     {
-        $service = app(SettingService::class);
+        // avoid container binding resolution; also guard if class missing
+        if (! class_exists(SettingService::class)) {
+            return ['integrations' => []];
+        }
+
+        $service = new SettingService();
         $status = $service->getConfigStatus();
 
         return [
