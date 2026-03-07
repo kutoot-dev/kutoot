@@ -40,4 +40,17 @@ class MerchantLocationController extends Controller
 
         return MerchantLocationResource::collection($locations);
     }
+
+    /**
+     * Show a single merchant location
+     *
+     * Returns the details of a specific merchant location by ID.
+     * Used by the QR → pay bill flow to fetch store details directly.
+     */
+    public function show(MerchantLocation $merchantLocation): MerchantLocationResource
+    {
+        $merchantLocation->load(['merchant', 'state', 'city', 'tags']);
+
+        return new MerchantLocationResource($merchantLocation);
+    }
 }

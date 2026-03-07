@@ -129,7 +129,7 @@ class AdminSetting extends Model
     /**
      * Cast value to the appropriate type.
      */
-    protected static function castValue(mixed $value, string $type): mixed
+    public static function castValue(mixed $value, string $type): mixed
     {
         return match ($type) {
             'integer' => (int) $value,

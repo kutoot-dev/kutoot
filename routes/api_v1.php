@@ -301,6 +301,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Merchant Locations
     Route::get('/merchant-locations', [MerchantLocationController::class, 'index'])
         ->name('api.v1.merchant-locations.index');
+
+    // Single merchant location by ID (used by QR → pay bill flow)
+    Route::get('/merchant-locations/{merchantLocation}', [MerchantLocationController::class, 'show'])
+        ->name('api.v1.merchant-locations.show');
 });
 
 // ── Admin endpoints ──────────────────────────────────────────────────────
