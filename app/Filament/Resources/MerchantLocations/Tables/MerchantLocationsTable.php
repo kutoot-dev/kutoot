@@ -8,7 +8,11 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use App\Filament\Tables\Columns\MediaColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Nnjeim\World\Models\City;
+use Nnjeim\World\Models\State;
 
 class MerchantLocationsTable
 {
@@ -24,6 +28,14 @@ class MerchantLocationsTable
                     ->sortable(),
                 TextColumn::make('branch_name')
                     ->searchable(),
+                TextColumn::make('state.name')
+                    ->label('State')
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('city.name')
+                    ->label('City')
+                    ->sortable()
+                    ->toggleable(),
                 MediaColumn::make('media')
                     ->collection('media')
                     ->conversion('thumb')
@@ -47,7 +59,16 @@ class MerchantLocationsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('state_id')
+                    ->label('State')
+                    ->options(fn () => State::where('country_id', 102)->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('city_id')
+                    ->label('City')
+                    ->options(fn () => City::where('country_id', 102)->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 EditAction::make(),
