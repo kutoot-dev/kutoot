@@ -103,6 +103,27 @@ class Campaign extends Model implements HasMedia
     }
 
     /**
+     * Sponsors associated with this campaign.
+     *
+     * @return BelongsToMany<Sponsor, $this>
+     */
+    public function sponsors(): BelongsToMany
+    {
+        return $this->belongsToMany(Sponsor::class, 'campaign_sponsor')
+            ->withPivot(['is_primary', 'sort_order'])
+            ->orderByPivot('sort_order')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the primary sponsor for this campaign.
+     */
+    public function primarySponsor(): ?Sponsor
+    {
+        return $this->sponsors()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
      * @return HasMany<Stamp, $this>
      */
     public function stamps(): HasMany

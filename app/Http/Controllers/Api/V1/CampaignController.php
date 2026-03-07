@@ -38,7 +38,7 @@ class CampaignController extends Controller
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status), fn ($q) => $q->active())
             ->when($request->input('category_id'), fn ($q, $catId) => $q->where('category_id', $catId))
             ->when($request->boolean('premium'), fn ($q) => $q->premium())
-            ->with(['category', 'media'])
+            ->with(['category', 'media', 'sponsors' => fn ($q) => $q->with('media')])
             ->latest()
             ->paginate(min((int) $request->input('per_page', 12), 50));
 
@@ -76,7 +76,7 @@ class CampaignController extends Controller
      */
     public function show(Campaign $campaign): CampaignResource
     {
-        $campaign->load(['category', 'stamps', 'media']);
+        $campaign->load(['category', 'stamps', 'media', 'sponsors' => fn ($q) => $q->with('media')]);
 
         $campaign->setAttribute('bounty_percentage', $this->bountyService->effectiveBountyPercentage($campaign));
 

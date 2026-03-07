@@ -34,6 +34,7 @@ class UserResource extends JsonResource
             'primary_campaign' => new CampaignResource($this->whenLoaded('primaryCampaign')),
             'active_subscription' => new UserSubscriptionResource($this->whenLoaded('activeSubscription')),
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
+            'terms_accepted_at' => $this->terms_accepted_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

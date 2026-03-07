@@ -229,4 +229,64 @@ class SubscriptionService
             ]
         );
     }
+
+    /**
+     * Assign the default (base) plan to a new user on first login.
+     * Awards bonus stamps if the default plan has stamps_on_purchase > 0.
+     * Skips if the user already has an active subscription.
+     */
+    public function assignDefaultPlan(User $user): ?UserSubscription
+    {
+        // Guard: skip if user already has an active subscription
+        if ($user->activeSubscription()->exists()) {
+            return $user->activeSubscription;
+        }
+
+        $basePlan = SubscriptionPlan::where('is_default', true)->first();
+
+        if (! $basePlan) {
+            return null;
+        }
+
+        // Create the default subscription (no expiry for base plan)
+        $subscription = UserSubscription::create([
+            'user_id' => $user->id,
+            'plan_id' => $basePlan->id,
+            'status' => SubscriptionStatus::Active,
+            'expires_at' => null,
+        ]);
+
+        // Auto-subscribe to plan campaigns
+        $this->campaignSubscriptionService->reconcileAfterPlanChange($user, $basePlan);
+        $this->campaignSubscriptionService->autoSubscribeForPlan($user, $basePlan);
+        $user->refresh();
+
+        // Set primary campaign if not already set
+        if (! $user->primary_campaign_id) {
+            $firstCampaign = $user->campaigns()->first();
+            if ($firstCampaign) {
+                $this->campaignSubscriptionService->setPrimary($user, $firstCampaign->id);
+                $user->refresh();
+            }
+        }
+
+        // Award bonus stamps for the default plan
+        if ($basePlan->stamps_on_purchase > 0 && $user->primary_campaign_id) {
+            $transaction = Transaction::create([
+                'user_id' => $user->id,
+                'amount' => 0,
+                'original_bill_amount' => 0,
+                'total_amount' => 0,
+                'payment_status' => PaymentStatus::Completed,
+                'payment_gateway' => 'plan_upgrade',
+                'payment_id' => 'PLAN-'.$basePlan->id.'-'.now()->timestamp,
+                'type' => TransactionType::PlanPurchase,
+                'commission_amount' => 0,
+            ]);
+
+            $this->stampService->awardStampsForPlanPurchase($user, $basePlan, transaction: $transaction);
+        }
+
+        return $subscription;
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -31,6 +32,18 @@ class Sponsor extends Model implements HasMedia
             'is_active' => 'boolean',
             'serial' => 'integer',
         ];
+    }
+
+    /**
+     * Campaigns this sponsor is associated with.
+     *
+     * @return BelongsToMany<Campaign, $this>
+     */
+    public function campaigns(): BelongsToMany
+    {
+        return $this->belongsToMany(Campaign::class, 'campaign_sponsor')
+            ->withPivot(['is_primary', 'sort_order'])
+            ->withTimestamps();
     }
 
     public function registerMediaCollections(): void

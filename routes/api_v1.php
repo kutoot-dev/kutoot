@@ -47,6 +47,9 @@ Route::get('/cities', [CityController::class, 'index'])
 
 // ── Authentication (public) ─────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
+    Route::get('/config', [AuthController::class, 'config'])
+        ->name('api.v1.auth.config');
+
     Route::post('/otp/send', [AuthController::class, 'sendOtp'])
         ->middleware('throttle:5,1')
         ->name('api.v1.auth.otp.send');
@@ -54,6 +57,14 @@ Route::prefix('auth')->group(function () {
     Route::post('/otp/verify', [AuthController::class, 'verifyOtp'])
         ->middleware('throttle:5,1')
         ->name('api.v1.auth.otp.verify');
+
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.auth.register');
+
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.auth.login');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', [AuthController::class, 'user'])
@@ -99,6 +110,14 @@ Route::get('/store-categories/{merchantCategory}/stores', [MerchantCategoryContr
 // ── Sponsors (public) ───────────────────────────────────────────────────
 Route::get('/sponsors', [SponsorController::class, 'index'])
     ->name('api.v1.sponsors.index');
+
+// ── Platform Terms (public) ─────────────────────────────────────────────
+Route::get('/terms/current', [\App\Http\Controllers\Api\V1\PlatformTermsController::class, 'current'])
+    ->name('api.v1.terms.current');
+
+// ── Public Config ───────────────────────────────────────────────────────
+Route::get('/config', [\App\Http\Controllers\Api\V1\ConfigController::class, 'index'])
+    ->name('api.v1.config');
 
 // ── Tags (public) ───────────────────────────────────────────────────────
 Route::get('/tags', [TagController::class, 'index'])
@@ -275,6 +294,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/qr/{token}/scan', [QrScanController::class, 'scan'])
         ->name('api.v1.qr.scan');
 
+    // Platform Terms Acceptance
+    Route::post('/terms/accept', [\App\Http\Controllers\Api\V1\PlatformTermsController::class, 'accept'])
+        ->name('api.v1.terms.accept');
+
     // Merchant Locations
     Route::get('/merchant-locations', [MerchantLocationController::class, 'index'])
         ->name('api.v1.merchant-locations.index');
@@ -282,6 +305,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ── Admin endpoints ──────────────────────────────────────────────────────
 Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
+    // Config Status (system health check)
+    Route::get('config-status', [\App\Http\Controllers\Api\V1\ConfigController::class, 'status'])
+        ->name('api.v1.admin.config-status');
+
+    // Platform Terms Management
+    Route::apiResource('platform-terms', \App\Http\Controllers\Api\V1\Admin\PlatformTermsController::class)
+        ->names('api.v1.admin.platform-terms');
+
     // Campaigns
     Route::apiResource('campaigns', \App\Http\Controllers\Api\V1\Admin\CampaignController::class)
         ->names('api.v1.admin.campaigns');

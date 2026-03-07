@@ -4,10 +4,12 @@ namespace App\Filament\Resources\Campaigns\Schemas;
 
 use App\Enums\CampaignStatus;
 use App\Enums\CreatorType;
+use App\Models\Sponsor;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -122,6 +124,25 @@ class CampaignForm
                             ->maxSize(config('upload.max_file_size_kb'))
                             ->conversion('sponsor_thumb')
                             ->helperText('Recommended size: 400x224px (16:9 aspect ratio).'),
+                    ]),
+
+                Section::make('Campaign Sponsors')
+                    ->description('Link sponsors to this campaign. One sponsor can be marked as the primary sponsor.')
+                    ->collapsible()
+                    ->components([
+                        Select::make('sponsors')
+                            ->relationship('sponsors', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->helperText('Select sponsors for this campaign from the sponsors list.'),
+
+                        Select::make('primary_sponsor_id')
+                            ->label('Primary Sponsor')
+                            ->options(fn (Get $get) => Sponsor::whereIn('id', $get('sponsors') ?? [])->pluck('name', 'id'))
+                            ->helperText('Select which sponsor is the primary/featured sponsor for this campaign.')
+                            ->reactive()
+                            ->visible(fn (Get $get) => ! empty($get('sponsors'))),
                     ]),
 
                 Section::make('Stamp Code Configuration')
