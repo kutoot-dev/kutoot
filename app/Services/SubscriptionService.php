@@ -299,6 +299,8 @@ class SubscriptionService
                 }
             }
 
+            // User already has the default plan — do not create a new subscription
+            return $active;
         }
 
         // no active subscription – create the default subscription (no expiry for base plan)
@@ -325,22 +327,30 @@ class SubscriptionService
             }
         }
 
-        // Award bonus stamps for the default plan
+        // Award bonus stamps for the default plan — only if not already awarded
         if ($basePlan->stamps_on_purchase > 0 && $user->primary_campaign_id) {
-            Log::info('assignDefaultPlan preparing to award bonus stamps', ['user_id' => $user->id, 'plan_id' => $basePlan->id, 'stamps_on_purchase' => $basePlan->stamps_on_purchase, 'primary_campaign_id' => $user->primary_campaign_id]);
-            $transaction = Transaction::create([
-                'user_id' => $user->id,
-                'amount' => 0,
-                'original_bill_amount' => 0,
-                'total_amount' => 0,
-                'payment_status' => PaymentStatus::Completed,
-                'payment_gateway' => 'plan_upgrade',
-                'payment_id' => 'PLAN-'.$basePlan->id.'-'.now()->timestamp,
-                'type' => TransactionType::PlanPurchase,
-                'commission_amount' => 0,
-            ]);
+            $alreadyAwarded = $user->stamps()
+                ->where('source', 'plan_purchase')
+                ->exists();
 
-            $this->stampService->awardStampsForPlanPurchase($user, $basePlan, transaction: $transaction);
+            if (! $alreadyAwarded) {
+                Log::info('assignDefaultPlan preparing to award bonus stamps', ['user_id' => $user->id, 'plan_id' => $basePlan->id, 'stamps_on_purchase' => $basePlan->stamps_on_purchase, 'primary_campaign_id' => $user->primary_campaign_id]);
+                $transaction = Transaction::create([
+                    'user_id' => $user->id,
+                    'amount' => 0,
+                    'original_bill_amount' => 0,
+                    'total_amount' => 0,
+                    'payment_status' => PaymentStatus::Completed,
+                    'payment_gateway' => 'plan_upgrade',
+                    'payment_id' => 'PLAN-'.$basePlan->id.'-'.now()->timestamp,
+                    'type' => TransactionType::PlanPurchase,
+                    'commission_amount' => 0,
+                ]);
+
+                $this->stampService->awardStampsForPlanPurchase($user, $basePlan, transaction: $transaction);
+            } else {
+                Log::info('assignDefaultPlan skipping stamp award — already awarded for this user', ['user_id' => $user->id]);
+            }
         }
 
         return $subscription;
