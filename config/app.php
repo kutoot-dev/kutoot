@@ -85,6 +85,7 @@ return [
     'payment_default_gateway' => env('PAYMENT_DEFAULT_GATEWAY', 'razorpay'),
     'platform_fee_type' => env('PLATFORM_FEE_TYPE', 'fixed'),
     'plan_tax_type' => env('PLAN_TAX_TYPE', 'exclusive'),
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
     'razorpay' => [
         // Environment-specific keys are provided by the

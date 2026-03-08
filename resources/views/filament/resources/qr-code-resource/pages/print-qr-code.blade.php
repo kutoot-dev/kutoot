@@ -2,14 +2,22 @@
     <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-sm">
         @php
             $url = route('qr.scan', ['token' => $record->token]);
-            $qrCode = \Endroid\QrCode\Builder\Builder::create()
+            $logoPath = public_path('images/kutoot-full-logo.png');
+            $builder = \Endroid\QrCode\Builder\Builder::create()
                 ->data($url)
                 ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
                 ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
                 ->size(400)
                 ->margin(10)
-                ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
-                ->build();
+                ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin);
+            if (file_exists($logoPath)) {
+                $builder = $builder
+                    ->logoPath($logoPath)
+                    ->logoResizeToWidth(80)
+                    ->logoResizeToHeight(80)
+                    ->logoPunchoutBackground(true);
+            }
+            $qrCode = $builder->build();
             $dataUri = $qrCode->getDataUri();
         @endphp
 
@@ -23,12 +31,14 @@
             </x-filament::button>
         </div>
 
-        {{-- Visible Preview (replicating print layout) --}}
-        <div class="p-8 bg-amber-50 border border-amber-200 rounded-xl shadow-lg flex flex-col items-center justify-center text-center" style="width: 400px; max-width: 100%;">
-            <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="mb-8 w-48" />
-            <img src="{{ $dataUri }}" alt="QR Code" class="mb-4 w-64 h-64 border-4 border-white rounded-lg shadow-sm" />
-            <div class="text-3xl font-bold text-gray-800 mt-4">{{ $record->unique_code }}</div>
-            <div class="text-sm text-gray-500 mt-2">{{ $url }}</div>
+        {{-- Visible Preview (Single card, full width) --}}
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%;">
+            <div class="p-6 bg-amber-50 border border-amber-200 rounded-xl shadow-lg flex flex-col items-center justify-center text-center" style="width: 100%; max-width: 500px;">
+                <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="mb-4" style="width: 100%; max-width: 300px;" />
+                <img src="{{ $dataUri }}" alt="QR Code" class="mb-3 w-48 h-48 border-4 border-white rounded-lg shadow-sm" />
+                <div class="text-xl font-bold text-gray-800 mt-2">{{ $record->unique_code }}</div>
+                <div class="text-xs text-gray-500 mt-1 break-all">{{ $url }}</div>
+            </div>
         </div>
 
         {{-- Hidden Print Template --}}
@@ -36,8 +46,8 @@
             <style>
                 @media print {
                     @page {
-                        size: 800px 1280px; /* Approximate 8-inch tablet ratio */
-                        margin: 0;
+                        size: A4 landscape;
+                        margin: 10mm;
                     }
                     body {
                         margin: 0;
@@ -46,51 +56,67 @@
                         justify-content: center;
                         align-items: center;
                         min-height: 100vh;
-                        background-color: #fffbeb !important; /* Amber-50 */
+                        background-color: #fff !important;
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
-                        font-family: 'Inter', sans-serif; /* Setup appropriate font */
+                        font-family: 'Inter', sans-serif;
                     }
-                    .print-container {
+                    .print-page {
                         width: 100%;
                         height: 100%;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
+                        gap: 12mm;
+                    }
+                    .print-card {
+                        width: 80mm;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
                         text-align: center;
-                        padding: 2rem;
-                        background-color: #fffbeb !important; /* Amber-50 */
+                        padding: 8mm;
+                        background-color: #fffbeb !important;
+                        border: 1px solid #fde68a;
+                        border-radius: 6mm;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
                     }
                     .logo {
-                        width: 400px;
-                        margin-bottom: 3rem;
+                        width: 100%;
+                        max-width: 70mm;
+                        margin-bottom: 5mm;
                     }
                     .qr-image {
-                        width: 500px;
-                        height: 500px;
-                        margin-bottom: 2rem;
-                        border: 10px solid white;
-                        border-radius: 20px;
+                        width: 55mm;
+                        height: 55mm;
+                        margin-bottom: 3mm;
+                        border: 2px solid white;
+                        border-radius: 4mm;
                     }
                     .code-text {
-                        font-size: 60px;
-                        font-weight: 800; /* Bold */
-                        margin-top: 2rem;
-                        color: #1f2937; /* Gray-800 */
+                        font-size: 18px;
+                        font-weight: 800;
+                        margin-top: 3mm;
+                        color: #1f2937;
                     }
                     .url-text {
-                        font-size: 24px;
-                        color: #6b7280; /* Gray-500 */
-                        margin-top: 1rem;
+                        font-size: 9px;
+                        color: #6b7280;
+                        margin-top: 2mm;
+                        word-break: break-all;
                     }
                 }
             </style>
-            <div class="print-container">
-                <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
-                <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
-                <div class="code-text">{{ $record->unique_code }}</div>
-                <div class="url-text">{{ $url }}</div>
+            <div class="print-page">
+                <div class="print-card">
+                    <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
+                    <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
+                    <div class="code-text">{{ $record->unique_code }}</div>
+                    <div class="url-text">{{ $url }}</div>
+                </div>
             </div>
         </div>
 
@@ -98,11 +124,11 @@
             function printQrCode() {
                 const printContent = document.getElementById('qr-print-template').innerHTML;
                 const originalContents = document.body.innerHTML;
-                
+
                 document.body.innerHTML = printContent;
-                
+
                 window.print();
-                
+
                 // Restore content and reload to retain event listeners/state
                 document.body.innerHTML = originalContents;
                 window.location.reload();
