@@ -275,14 +275,29 @@ class SubscriptionService
                 return $active;
             }
 
-            // active subscription is already the default plan; ensure bonus stamps have been awarded
+            // active subscription is already the default plan; ensure campaign subscriptions and
+            // primary campaign are set — required for stamp resolution to work.
+            $this->campaignSubscriptionService->reconcileAfterPlanChange($user, $basePlan);
+            $this->campaignSubscriptionService->autoSubscribeForPlan($user, $basePlan);
+            $user->refresh();
+
+            if (! $user->primary_campaign_id) {
+                $firstCampaign = $user->campaigns()->first();
+                if ($firstCampaign) {
+                    $this->campaignSubscriptionService->setPrimary($user, $firstCampaign->id);
+                    $user->refresh();
+                    Log::info('assignDefaultPlan (existing base plan) set missing primary campaign', ['user_id' => $user->id, 'campaign_id' => $firstCampaign->id]);
+                }
+            }
+
+            // Ensure bonus stamps have been awarded (may have been missed on first login due to a bug)
             if ($basePlan->stamps_on_purchase > 0) {
                 $alreadyAwarded = $user->stamps()
                     ->where('source', 'plan_purchase')
                     ->exists();
 
                 if (! $alreadyAwarded) {
-                    Log::info('assignDefaultPlan awarding missing stamps for existing base subscription', ['user_id' => $user->id, 'plan_id' => $basePlan->id, 'stamps_on_purchase' => $basePlan->stamps_on_purchase]);
+                    Log::info('assignDefaultPlan awarding missing bonus stamps for existing base subscription', ['user_id' => $user->id, 'plan_id' => $basePlan->id, 'stamps_on_purchase' => $basePlan->stamps_on_purchase]);
                     $transaction = Transaction::create([
                         'user_id' => $user->id,
                         'amount' => 0,
@@ -296,6 +311,8 @@ class SubscriptionService
                     ]);
 
                     $this->stampService->awardStampsForPlanPurchase($user, $basePlan, transaction: $transaction);
+                } else {
+                    Log::info('assignDefaultPlan bonus stamps already awarded for existing base subscription — skipping', ['user_id' => $user->id]);
                 }
             }
 
