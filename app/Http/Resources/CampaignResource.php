@@ -58,6 +58,8 @@ class CampaignResource extends JsonResource
             ])),
             // include sponsors relationship if loaded
             'sponsors' => SponsorResource::collection($this->whenLoaded('sponsors')),
+            // include the explicit primary sponsor relation when available
+            'primary_sponsor' => new SponsorResource($this->whenLoaded('primarySponsorRelation')),
             'sponsor_image' => $this->when(
                 $this->getFirstMedia('sponsor_image'),
                 fn () => [
