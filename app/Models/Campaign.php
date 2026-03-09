@@ -16,6 +16,7 @@ use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Support\Facades\DB;
 
 class Campaign extends Model implements HasMedia
 {
@@ -46,6 +47,8 @@ class Campaign extends Model implements HasMedia
         'key_facts',
         'is_active',
         'is_premium',
+        // new attribute added by migration
+        'primary_sponsor_id',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -122,9 +125,32 @@ class Campaign extends Model implements HasMedia
     /**
      * Get the primary sponsor for this campaign.
      */
+    /**
+     * Get the primary sponsor for this campaign.
+     *
+     * The form now stores the selection in an explicit column on the
+     * campaigns table. When that attribute is populated we return the
+     * related Sponsor directly; otherwise we fall back to the traditional
+     * pivot lookup so existing code continues to work during the
+     * transition period.
+     */
     public function primarySponsor(): ?Sponsor
     {
+        if ($this->primary_sponsor_id) {
+            // use the belongsTo relation so eager-loading still works
+            return $this->primarySponsorRelation()->first();
+        }
+
         return $this->sponsors()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
+     * Relationship for the column added by the migration. Useful when eager
+     * loading or performing queries such as `with('primarySponsorRelation')`.
+     */
+    public function primarySponsorRelation(): BelongsTo
+    {
+        return $this->belongsTo(Sponsor::class, 'primary_sponsor_id');
     }
 
     /**
@@ -151,6 +177,48 @@ class Campaign extends Model implements HasMedia
     {
         return $query->where('status', CampaignStatus::Active);
     }
+
+    /**
+     * Ensure that the pivot table is kept in sync with the simple
+     * `primary_sponsor_id` column. This method may be called from page
+     * handlers or other services when the chosen primary sponsor has changed.
+     */
+    public function syncPrimarySponsorPivot(): void
+    {
+        // wipe any existing flag first; the update will be a no-op if there
+        // aren't any linked sponsors yet.
+        DB::table('campaign_sponsor')
+            ->where('campaign_id', $this->id)
+            ->update(['is_primary' => false]);
+
+        if ($this->primary_sponsor_id) {
+            // make sure the campaign actually references the sponsor so the
+            // subsequent update succeeds; the relationship may have been
+            // synced separately by Filament.
+            $this->sponsors()->syncWithoutDetaching([$this->primary_sponsor_id]);
+
+            DB::table('campaign_sponsor')
+                ->where('campaign_id', $this->id)
+                ->where('sponsor_id', $this->primary_sponsor_id)
+                ->update(['is_primary' => true]);
+        }
+    }
+
+    /**
+     * Boot the model and hook into lifecycle events.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (Campaign $campaign): void {
+            // only sync when the column was changed; this avoids blowing
+            // away flags during unrelated updates such as stamp cache
+            // increments.
+            if ($campaign->wasChanged('primary_sponsor_id')) {
+                $campaign->syncPrimarySponsorPivot();
+            }
+        });
+    }
+
 
     public function scopeForPlan(Builder $query, int $planId): Builder
     {

@@ -22,4 +22,9 @@ class CreateCampaign extends CreateRecord
             ->title('Campaign Created')
             ->body('The campaign has been created successfully.');
     }
+
+    protected function afterSave(): void
+    {
+        $this->record->syncPrimarySponsorPivot();
+    }
 }

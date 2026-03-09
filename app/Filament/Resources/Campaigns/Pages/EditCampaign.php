@@ -30,4 +30,10 @@ class EditCampaign extends EditRecord
             ->title('Campaign Updated')
             ->body('The campaign has been updated successfully.');
     }
+
+    protected function afterSave(): void
+    {
+        // ensure pivot flag corresponds to the selected primary sponsor
+        $this->record->syncPrimarySponsorPivot();
+    }
 }
