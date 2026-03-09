@@ -141,4 +141,37 @@ class QrCodeController extends Controller
 
         return new QrCodeResource($qrCode);
     }
+
+    /**
+     * Get QR code image.
+     */
+    public function image(QrCode $qrCode)
+    {
+        $url = route('qr.scan', ['token' => $qrCode->token]);
+        $logoPath = public_path('images/kutoot-full-logo.png');
+
+        $builder = \Endroid\QrCode\Builder\Builder::create()
+            ->data($url)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
+            ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
+            ->size(300)
+            ->margin(8)
+            ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
+            ->foregroundColor(new \Endroid\QrCode\Color\Color(31, 26, 46))
+            ->backgroundColor(new \Endroid\QrCode\Color\Color(255, 255, 255));
+
+        if (file_exists($logoPath)) {
+            $builder = $builder
+                ->logoPath($logoPath)
+                ->logoResizeToWidth(60)
+                ->logoResizeToHeight(60)
+                ->logoPunchoutBackground(true);
+        }
+
+        $qrCode = $builder->build();
+
+        return response($qrCode->getString())
+            ->header('Content-Type', 'image/png')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }

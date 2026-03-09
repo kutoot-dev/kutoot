@@ -54,7 +54,7 @@ class MerchantCategoryController extends Controller
         $merchants = MerchantLocation::query()
             ->where('merchant_category_id', $merchantCategory->id)
             ->where('is_active', true)
-            ->with(['merchant', 'tags', 'media', 'state', 'city'])
+            ->with(['merchant', 'tags', 'media', 'state', 'city', 'primaryQrCode'])
             ->when($request->input('search'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('branch_name', 'like', "%{$search}%")

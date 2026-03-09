@@ -28,7 +28,7 @@ class MerchantLocationController extends Controller
         $this->authorize('viewAny', MerchantLocation::class);
 
         $locations = MerchantLocation::query()
-            ->with(['merchant', 'media'])
+            ->with(['merchant', 'media', 'primaryQrCode'])
             ->withCount(['transactions', 'qrCodes', 'coupons'])
             ->when($request->input('filter.merchant_id'), fn ($q, $id) => $q->where('merchant_id', $id))
             ->when($request->has('filter.is_active'), fn ($q) => $q->where('is_active', $request->boolean('filter.is_active')))
@@ -46,7 +46,7 @@ class MerchantLocationController extends Controller
     {
         $this->authorize('view', $merchantLocation);
 
-        $merchantLocation->load(['merchant', 'media']);
+        $merchantLocation->load(['merchant', 'media', 'primaryQrCode']);
         $merchantLocation->loadCount(['transactions', 'qrCodes', 'coupons']);
 
         return new MerchantLocationResource($merchantLocation);
@@ -59,7 +59,7 @@ class MerchantLocationController extends Controller
     {
         $location = MerchantLocation::create($request->validated());
 
-        $location->load(['merchant', 'media']);
+        $location->load(['merchant', 'media', 'primaryQrCode']);
 
         return (new MerchantLocationResource($location))
             ->response()
@@ -73,7 +73,7 @@ class MerchantLocationController extends Controller
     {
         $merchantLocation->update($request->validated());
 
-        $merchantLocation->load(['merchant', 'media']);
+        $merchantLocation->load(['merchant', 'media', 'primaryQrCode']);
 
         return new MerchantLocationResource($merchantLocation);
     }

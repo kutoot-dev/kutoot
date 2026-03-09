@@ -26,7 +26,7 @@ class MerchantLocationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $locations = MerchantLocation::query()
-            ->with('merchant')
+            ->with(['merchant', 'primaryQrCode'])
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('branch_name', 'like', "%{$search}%")
@@ -49,7 +49,7 @@ class MerchantLocationController extends Controller
      */
     public function show(MerchantLocation $merchantLocation): MerchantLocationResource
     {
-        $merchantLocation->load(['merchant', 'state', 'city', 'tags']);
+        $merchantLocation->load(['merchant', 'state', 'city', 'tags', 'primaryQrCode']);
 
         return new MerchantLocationResource($merchantLocation);
     }

@@ -128,6 +128,10 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
     ->middleware('throttle:5,1')
     ->name('api.v1.newsletter.subscribe');
 
+// ── QR Codes (public - for scanning and image generation) ──────────────
+Route::get('/qr-codes/{qrCode}/image', [\App\Http\Controllers\Api\V1\Admin\QrCodeController::class, 'image'])
+    ->name('api.v1.qr-codes.image');
+
 // ── Merchant Location Registration & Auth (public) ─────────────────────
 Route::prefix('merchant-locations')->group(function () {
     // Store categories alias (same handler as /store-categories)
