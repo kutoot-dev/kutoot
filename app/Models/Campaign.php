@@ -32,6 +32,7 @@ class Campaign extends Model implements HasMedia
         'status',
         'start_date',
         'reward_cost_target',
+        'reward_cost',
         'stamp_target',
         'stamp_slots',
         'stamp_slot_min',
@@ -42,6 +43,7 @@ class Campaign extends Model implements HasMedia
         'issued_stamps_cache',
         'marketing_bounty_percentage',
         'winner_announcement_date',
+        'key_facts',
         'is_active',
         'is_premium',
     ];
@@ -65,6 +67,7 @@ class Campaign extends Model implements HasMedia
             'creator_type' => CreatorType::class,
             'start_date' => 'date',
             'reward_cost_target' => 'decimal:2',
+            'reward_cost' => 'decimal:2',
             'collected_commission_cache' => 'decimal:2',
             'marketing_bounty_percentage' => 'integer',
             'winner_announcement_date' => 'datetime',
@@ -75,6 +78,7 @@ class Campaign extends Model implements HasMedia
             'stamp_editable_on_coupon_redemption' => 'boolean',
             'is_active' => 'boolean',
             'is_premium' => 'boolean',
+            'key_facts' => 'json',
         ];
     }
 

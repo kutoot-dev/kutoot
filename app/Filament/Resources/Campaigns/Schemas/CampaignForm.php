@@ -52,6 +52,11 @@ class CampaignForm
                 TextInput::make('reward_cost_target')
                     ->required()
                     ->numeric(),
+                TextInput::make('reward_cost')
+                    ->label('Reward Cost (Display Value)')
+                    ->helperText('The actual cost/value of the reward to display in campaign details/popup')
+                    ->numeric()
+                    ->step(0.01),
                 TextInput::make('stamp_target')
                     ->required()
                     ->numeric(),
@@ -82,6 +87,33 @@ class CampaignForm
                     ->helperText('Select which subscription plans can access this campaign.')
                     ->bulkToggleable()
                     ->columns(2),
+
+                Section::make('Campaign Highlights')
+                    ->description('Add eye-catching key facts/highlights to display in the campaign details popup.')
+                    ->collapsible()
+                    ->components([
+                        Repeater::make('key_facts')
+                            ->label('Key Facts')
+                            ->helperText('Add key-value pairs that will be displayed as campaign highlights in an attractive format.')
+                            ->schema([
+                                TextInput::make('key')
+                                    ->label('Label')
+                                    ->placeholder('e.g., Validity, Benefit, Feature')
+                                    ->required()
+                                    ->columnSpanFull()
+                                    ->maxLength(100),
+                                TextInput::make('value')
+                                    ->label('Value')
+                                    ->placeholder('e.g., 30 Days, ₹500 Cash Back, Free Shipping')
+                                    ->required()
+                                    ->columnSpanFull()
+                                    ->maxLength(255),
+                            ])
+                            ->defaultItems(0)
+                            ->addActionLabel('Add Key Fact')
+                            ->collapsible()
+                            ->columnSpanFull(),
+                    ]),
 
                 Section::make('Media')
                     ->description('Upload images and videos for this campaign.')
