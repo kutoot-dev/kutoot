@@ -14,6 +14,8 @@ class QrLogoService
      */
     public static function getLogoPath(): ?string
     {
+        $defaultPath = public_path('images/k-logo.png');
+
         $uploadedPath = AdminSetting::get('qr_logo');
         $disk = SettingService::get('media_disk', 'public');
 
@@ -36,7 +38,6 @@ class QrLogoService
             return $localCachePath;
         }
 
-        $defaultPath = public_path('images/kutoot-logo-initial.png');
 
         if (file_exists($defaultPath)) {
             return $defaultPath;
