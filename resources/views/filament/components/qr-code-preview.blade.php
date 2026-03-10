@@ -8,7 +8,10 @@
             ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
             ->size(400)
             ->margin(10)
-            ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin);
+            ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
+            // use orange modules instead of black
+            ->foregroundColor(new \Endroid\QrCode\Color\Color(242, 106, 27))
+            ->backgroundColor(new \Endroid\QrCode\Color\Color(255, 255, 255));
         if (file_exists($logoPath)) {
             $builder = $builder
                 ->logoPath($logoPath)
@@ -26,13 +29,10 @@
     >
         Print QR Code
     </button>
-    <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 12px;">
-        <div style="width: 100%; max-width: 500px; padding: 16px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-            <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" style="margin-bottom: 16px; width: 100%; max-width: 300px;" />
-            <img src="{{ $qrDataUri }}" alt="QR Code" style="margin-bottom: 12px; width: 192px; height: 192px; border: 4px solid white; border-radius: 8px;" />
-            <div style="font-size: 18px; font-weight: bold; color: #1f2937; margin-top: 8px;">{{ $getRecord()->unique_code }}</div>
-            <div style="font-size: 12px; color: #6b7280; margin-top: 4px; word-break: break-all;">{{ $url }}</div>
-        </div>
+    <div style="position: relative; width: 100%; max-width: 500px; aspect-ratio: 2/3; background: url('{{ asset('images/qr-background.png') }}') no-repeat center/contain; background-size: contain; margin-top: 12px;">
+        <!-- QR code centered over the placeholder in the background image -->
+        <img src="{{ $qrDataUri }}" alt="QR Code" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 192px; height: 192px;" />
+        <div style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-size: 14px; font-weight:bold; color:#1f2937;">{{ $getRecord()->unique_code }}</div>
     </div>
 
     <div id="qr-to-print-{{ $getRecord()->id }}" class="hidden">
@@ -103,11 +103,9 @@
             }
         </style>
         <div class="print-page">
-            <div class="print-card">
-                <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
-                <img src="{{ $qrDataUri }}" alt="QR Code" class="qr-image" />
-                <div class="code-text">{{ $getRecord()->unique_code }}</div>
-                <div class="url-text">{{ $url }}</div>
+            <div class="print-card" style="position:relative; background: url('{{ asset('images/qr-background.png') }}') no-repeat center/contain; background-size: contain;">
+                <img src="{{ $qrDataUri }}" alt="QR Code" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50mm; height:50mm;" />
+                <div class="code-text" style="position:absolute; bottom:5mm; left:50%; transform:translateX(-50%);">{{ $getRecord()->unique_code }}</div>
             </div>
         </div>
     </div>

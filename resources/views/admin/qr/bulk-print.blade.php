@@ -65,89 +65,35 @@
         .qr-card {
             flex: 1;
             height: 100%;
+            position: relative;
+            background: url('{{ asset('images/qr-background.png') }}') no-repeat center/contain;
+            background-size: contain;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 12mm;
-            background: linear-gradient(135deg, #fff8f5 0%, #fffbea 100%);
-            border: 2px solid #f26a1b;
-            border-radius: 16px;
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(142, 0, 56, 0.08);
         }
 
-        /* Decorative background elements */
-        .qr-card::before {
-            content: '';
+        .qr-card .qr-image {
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background:
-                radial-gradient(circle at 20% 50%, rgba(242, 106, 27, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(142, 0, 56, 0.03) 0%, transparent 50%);
-            pointer-events: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50mm;
+            height: 50mm;
         }
 
-        .qr-card::after {
-            content: '';
+        .qr-card .code-text {
             position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 30%;
-            height: 30%;
-            background: linear-gradient(135deg, rgba(242, 106, 27, 0.08) 0%, transparent 70%);
-            border-radius: 50% 0 0 0;
-            pointer-events: none;
-        }
-
-        .card-content {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            gap: 6mm;
-        }
-
-        .logo-badge {
-            width: 53mm;
-            height: 20mm;
-            padding: 3mm;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #4e1f05 0%, #351703 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(242, 106, 27, 0.3);
-        }
-
-        .logo-badge img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: brightness(1.1);
-        }
-
-        .qr-wrapper {
-            position: relative;
-            padding: 10mm;
-            border-radius: 60px;
-            background: white;
-            border: 2px solid #f26a1b;
-            box-shadow:
-                0 4px 12px rgba(142, 0, 56, 0.15),
-                inset 0 0 0 1px rgba(242, 106, 27, 0.1);
+            bottom: 10mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            line-height: 1.2;
         }
 
         .qr-image {
@@ -266,7 +212,8 @@
                         ->size(300)
                         ->margin(8)
                         ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
-                        ->foregroundColor(new \Endroid\QrCode\Color\Color(31, 26, 46))
+                        // orange modules instead of black
+                        ->foregroundColor(new \Endroid\QrCode\Color\Color(242, 106, 27))
                         ->backgroundColor(new \Endroid\QrCode\Color\Color(255, 255, 255));
                     if (file_exists($logoPath)) {
                         $builder = $builder
@@ -278,16 +225,8 @@
                     $qrCode = $builder->build();
                 @endphp
                 <div class="qr-card">
-                    <div class="card-content">
-                        <div class="logo-badge">
-                            <img src="{{ asset('images/kutoot-logo-initial.png') }}" alt="Kutoot" />
-                        </div>
-                        <div class="qr-wrapper">
-                            <img src="{{ $qrCode->getDataUri() }}" alt="QR Code" class="qr-image" />
-                        </div>
-                        <div class="code-text">{{ $record->unique_code }}</div>
-                        <div class="url-text">{{ $url }}</div>
-                    </div>
+                    <img src="{{ $qrCode->getDataUri() }}" alt="QR Code" class="qr-image" />
+                    <div class="code-text">{{ $record->unique_code }}</div>
                 </div>
             @endforeach
         </div>
