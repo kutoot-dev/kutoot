@@ -35,6 +35,8 @@ class CampaignResource extends JsonResource
                 'possible_combinations' => $this->getPossibleCombinations(),
             ]),
             'reward_cost_target' => (float) $this->reward_cost_target,
+            'reward_cost' => $this->reward_cost ? (float) $this->reward_cost : null,
+            'key_facts' => $this->key_facts ?? [],
             'stamp_target' => $this->stamp_target,
             'marketing_bounty_percentage' => $this->marketing_bounty_percentage,
             'collected_commission_cache' => (float) $this->collected_commission_cache,
