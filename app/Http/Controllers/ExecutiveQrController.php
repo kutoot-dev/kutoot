@@ -90,9 +90,9 @@ class ExecutiveQrController extends Controller
             ->setForegroundColor(new Color(0, 0, 0))
             ->setBackgroundColor(new Color(255, 255, 255));
 
-        $logoPath = public_path('images/kutoot-logo-initial.png');
+        $logoPath = \App\Services\QrLogoService::getLogoPath();
         $logo = null;
-        if (file_exists($logoPath)) {
+        if ($logoPath) {
             $logo = new Logo($logoPath);
             $logo->setResizeToWidth(50)
                 ->setPunchoutBackground(true);

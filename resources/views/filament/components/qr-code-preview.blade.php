@@ -1,7 +1,7 @@
 <div class="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow">
     @php
         $url = route('qr.scan', ['token' => $getRecord()->token]);
-        $logoPath = public_path('images/kutoot-logo-initial.png');
+        $logoPath = \App\Services\QrLogoService::getLogoPath();
         $builder = \Endroid\QrCode\Builder\Builder::create()
             ->data($url)
             ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))

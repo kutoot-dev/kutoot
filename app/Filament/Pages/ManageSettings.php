@@ -5,9 +5,10 @@ namespace App\Filament\Pages;
 use App\Models\AdminSetting;
 use App\Services\SettingService;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -114,6 +115,14 @@ class ManageSettings extends Page
                     'media_disk' => ['label' => 'Media Disk', 'type' => 'select', 'options' => ['s3' => 'S3', 'public' => 'Public (local)'], 'sensitive' => false],
                 ],
             ],
+            'branding' => [
+                'label' => 'Branding',
+                'icon' => Heroicon::OutlinedPhoto,
+                'description' => 'Brand assets used across the platform',
+                'fields' => [
+                    'qr_logo' => ['label' => 'QR Code Logo', 'type' => 'file', 'sensitive' => false],
+                ],
+            ],
         ];
     }
 
@@ -142,6 +151,11 @@ class ManageSettings extends Page
                 // Convert booleans for toggle fields
                 if ($fieldDef['type'] === 'toggle') {
                     $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                }
+
+                // File uploads need the stored path wrapped in an array for FileUpload component
+                if ($fieldDef['type'] === 'file' && $value) {
+                    $value = [$value];
                 }
 
                 $data[$key] = $value;
@@ -183,6 +197,15 @@ class ManageSettings extends Page
                     'toggle' => Toggle::make($key)
                         ->label($fieldDef['label'])
                         ->helperText("Source: {$source}"),
+
+                    'file' => FileUpload::make($key)
+                        ->label($fieldDef['label'])
+                        ->image()
+                        ->disk('public')
+                        ->directory('settings')
+                        ->visibility('public')
+                        ->imagePreviewHeight('100')
+                        ->helperText('Upload a logo image (PNG recommended, ~200×200px). Used inside all merchant QR codes.'),
 
                     default => TextInput::make($key)
                         ->label($fieldDef['label'])
@@ -232,6 +255,11 @@ class ManageSettings extends Page
                 // Convert toggle booleans to string
                 if ($fieldDef['type'] === 'toggle') {
                     $value = $value ? '1' : '0';
+                }
+
+                // File uploads return an array of paths — store the first (or empty string)
+                if ($fieldDef['type'] === 'file') {
+                    $value = is_array($value) ? (collect($value)->first() ?? '') : ($value ?? '');
                 }
 
                 // Use updateOrCreate so settings that don't exist in DB yet are created

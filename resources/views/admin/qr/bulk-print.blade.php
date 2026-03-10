@@ -204,7 +204,7 @@
             @foreach($chunk as $record)
                 @php
                     $url = route('qr.scan', ['token' => $record->token]);
-                    $logoPath = public_path('images/kutoot-logo-initial.png');
+                    $logoPath = \App\Services\QrLogoService::getLogoPath();
                     $builder = \Endroid\QrCode\Builder\Builder::create()
                         ->data($url)
                         ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
