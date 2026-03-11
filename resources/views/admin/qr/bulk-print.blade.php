@@ -4,22 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bulk Print QR Codes</title>
+    @php
+        $bgUrl = asset('images/qr-background.png');
+    @endphp
     <style>
-        :root {
-            --sticker-width: {{ $width ?? 38 }}mm;
-            --sticker-height: {{ $height ?? 25 }}mm;
-            --sticker-margin: {{ $margin ?? 2 }}mm;
-        }
-
         @media print {
             @page {
-                size: {{ \App\Services\SettingService::get('qr_print_width_in', 6) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 4) }}in;
+                size: {{ \App\Services\SettingService::get('qr_print_width_in', 4) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 6) }}in;
                 margin: 0;
             }
             body {
                 margin: 0;
                 padding: 0;
-                background-color: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .no-print {
                 display: none !important;
@@ -33,66 +31,46 @@
             padding: 20px;
         }
 
-        /* The container holding the printable grid */
+        /* Vertical stack of 4x6 stickers */
         .page-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2mm;
-            justify-content: flex-start;
-            align-content: flex-start;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            padding: 10mm;
-            max-width: {{ $layout === '3-across' ? 'calc((var(--sticker-width) * 3) + 25mm)' : 'calc(var(--sticker-width) + 20mm)' }};
-        }
-
-        /* A single sticker container */
-        .sticker-card {
-            width: var(--sticker-width);
-            height: var(--sticker-height);
-            margin: var(--sticker-margin);
-            border: 1px dotted #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            background-color: #fffbeb !important; /* Amber-50 */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            overflow: hidden;
+            gap: 0;
+            margin: 0 auto;
+            max-width: 4in;
+        }
+
+        .sticker-card {
+            width: 4in;
+            height: 6in;
             position: relative;
+            background-image: url('{{ $bgUrl }}');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            box-sizing: border-box;
+            break-inside: avoid;
         }
 
-        .logo {
-            width: 40%;
-            margin-bottom: 2mm;
+        .sticker-card .qr-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: auto;
+            border-radius: 12px;
         }
 
-        .qr-image {
-            width: 60%;
-            max-height: 60%;
-            object-fit: contain;
-        }
-
-        .code-text {
-            font-size: 8px;
-            font-weight: bold;
-            margin-top: 1mm;
-            color: #1f2937; /* Gray-800 on background */
+        .sticker-card .code-text {
+            position: absolute;
+            bottom: 16%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1f2937;
             white-space: nowrap;
-        }
-
-        .url-text {
-            font-size: 5px;
-            color: #6b7280;
-            margin-top: 0.5mm;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 90%;
         }
 
         .toolbar {
@@ -104,7 +82,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 800px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -131,7 +109,6 @@
         .back-btn:hover {
             color: #111827;
         }
-
     </style>
 </head>
 <body>
@@ -139,20 +116,18 @@
     <div class="toolbar no-print">
         <a href="javascript:history.back()" class="back-btn">&larr; Back to QR Codes</a>
         <div>
-            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | Layout: {{ $layout }} | Size: {{ $width }}x{{ $height }}mm | Page: 6"x4"</span>
+            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | 4" &times; 6" vertical</span>
             <button class="print-btn" onclick="window.print()">Print Now</button>
         </div>
     </div>
 
-    <!-- The actual print block -->
     <div class="page-container">
         @foreach($qrCodes as $record)
             @php
                 $url = route('qr.scan', ['token' => $record->token]);
-                $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 200);
+                $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 360);
             @endphp
             <div class="sticker-card">
-                <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
                 <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
                 <div class="code-text">{{ $record->unique_code }}</div>
             </div>

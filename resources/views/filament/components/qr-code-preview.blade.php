@@ -1,8 +1,10 @@
+@php
+    $url = route('qr.scan', ['token' => $getRecord()->token]);
+    $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 400);
+    $bgUrl = asset('images/qr-background.png');
+@endphp
+
 <div class="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow">
-    @php
-        $url = route('qr.scan', ['token' => $getRecord()->token]);
-        $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 400);
-    @endphp
     <button
         type="button"
         onclick="const printContent = document.getElementById('qr-to-print-{{ $getRecord()->id }}').innerHTML; const originalContents = document.body.innerHTML; document.body.innerHTML = printContent; window.print(); document.body.innerHTML = originalContents; window.location.reload();"
@@ -11,68 +13,59 @@
         Print QR Code
     </button>
 
+    {{-- Preview with qr-background --}}
+    <div class="mt-4 qr-sticker-preview" style="width: 200px; aspect-ratio: 4/6; background-image: url('{{ $bgUrl }}'); background-size: 100% 100%; background-repeat: no-repeat; position: relative; border-radius: 8px; overflow: hidden;">
+        <img src="{{ $dataUri }}" alt="QR Code" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[38%] h-auto rounded-lg" />
+        <div class="absolute bottom-[16%] left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800 whitespace-nowrap">{{ $getRecord()->unique_code }}</div>
+    </div>
+
     <div id="qr-to-print-{{ $getRecord()->id }}" class="hidden">
         <style>
             @media print {
                 @page {
-                    size: {{ \App\Services\SettingService::get('qr_print_width_in', 6) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 4) }}in;
+                    size: {{ \App\Services\SettingService::get('qr_print_width_in', 4) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 6) }}in;
                     margin: 0;
                 }
                 body {
                     margin: 0;
                     padding: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    background-color: #fffbeb !important; /* Amber-50 */
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
+                    font-family: 'Inter', sans-serif;
                 }
-                .print-container {
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    text-align: center;
-                    padding: 1rem;
-                    background-color: #fffbeb !important; /* Amber-50 */
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
+                .qr-sticker-print {
+                    width: 4in;
+                    height: 6in;
+                    position: relative;
+                    background-image: url('{{ $bgUrl }}');
+                    background-size: 100% 100%;
+                    background-repeat: no-repeat;
+                    box-sizing: border-box;
                 }
-                .logo {
-                    width: 25%;
-                    max-width: 120px;
-                    margin-bottom: 0.5rem;
-                }
-                .qr-image {
-                    width: 55%;
-                    max-width: 200px;
+                .qr-sticker-print .qr-image {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 50%;
                     height: auto;
-                    margin-bottom: 0.5rem;
-                    border: 4px solid white;
                     border-radius: 12px;
                 }
-                .code-text {
-                    font-size: 1.5rem;
+                .qr-sticker-print .code-text {
+                    position: absolute;
+                    bottom: 16%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 1.25rem;
                     font-weight: 800;
-                    margin-top: 0.5rem;
-                    color: #1f2937; /* Gray-800 */
-                }
-                .url-text {
-                    font-size: 0.6rem;
-                    color: #6b7280; /* Gray-500 */
-                    margin-top: 0.25rem;
+                    color: #1f2937;
+                    white-space: nowrap;
                 }
             }
         </style>
-        <div class="print-container">
-            <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
+        <div class="qr-sticker-print">
             <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
             <div class="code-text">{{ $getRecord()->unique_code }}</div>
-            <div class="url-text">{{ $url }}</div>
         </div>
     </div>
 </div>

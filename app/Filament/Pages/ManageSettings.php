@@ -121,8 +121,8 @@ class ManageSettings extends Page
                 'description' => 'Brand assets and QR print settings',
                 'fields' => [
                     'qr_logo' => ['label' => 'QR Code Logo', 'type' => 'file', 'sensitive' => false],
-                    'qr_print_width_in' => ['label' => 'QR Print Page Width (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 6],
-                    'qr_print_height_in' => ['label' => 'QR Print Page Height (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 4],
+                    'qr_print_width_in' => ['label' => 'QR Print Page Width (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 4],
+                    'qr_print_height_in' => ['label' => 'QR Print Page Height (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 6],
                 ],
             ],
         ];
