@@ -38,6 +38,7 @@ class QrBackgroundService
                 ]);
             }
         }
+        
 
         return asset(static::$defaultPath);
     }
