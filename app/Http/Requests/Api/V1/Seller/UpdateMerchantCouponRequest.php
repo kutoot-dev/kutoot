@@ -19,7 +19,7 @@ class UpdateMerchantCouponRequest extends FormRequest
         return [
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
-            'discount_type' => ['sometimes', 'in:percentage,flat'],
+            'discount_type' => ['sometimes', 'in:percentage,fixed'],
             'discount_value' => ['sometimes', 'numeric', 'min:0'],
             'code' => ['sometimes', 'nullable', 'string', 'max:50'],
             'min_order_value' => ['sometimes', 'nullable', 'numeric', 'min:0'],
