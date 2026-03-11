@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
 
@@ -35,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Ensure storage/framework directories exist (fixes "No such file or directory" for file cache/rate limiting)
+        $this->ensureStorageDirectoriesExist();
+
         // Force HTTPS for all generated URLs (fixes Mixed Content / Livewire behind Cloudflare/proxy)
         // Required when behind proxy where request may arrive as HTTP
         $appUrl = config('app.url');
@@ -104,8 +108,11 @@ class AppServiceProvider extends ServiceProvider
 
             $maxMb = (int) SettingService::get('max_upload_size_mb', 100);
             if ($maxMb > 0) {
-                Config::set('upload.max_file_size_kb', $maxMb * 1024);
+                $maxKb = $maxMb * 1024;
+                Config::set('upload.max_file_size_kb', $maxKb);
                 Config::set('media-library.max_file_size', $maxMb * 1024 * 1024);
+                // Livewire temporary uploads default to 12MB — sync with our limit so large files pass through
+                Config::set('livewire.temporary_file_upload.rules', ['file', 'max:' . $maxKb]);
             }
 
             if ($storageDisk === 's3') {
@@ -134,5 +141,25 @@ class AppServiceProvider extends ServiceProvider
                     ->setDescription('Sanctum Bearer token obtained via the OTP login flow.')
             );
         });
+    }
+
+    /**
+     * Ensure storage/framework directories exist and are writable.
+     * Fixes "No such file or directory" when using file cache or rate limiting.
+     */
+    protected function ensureStorageDirectoriesExist(): void
+    {
+        $dirs = [
+            storage_path('framework/cache/data'),
+            storage_path('framework/sessions'),
+            storage_path('framework/views'),
+            storage_path('app/livewire-tmp'),
+        ];
+
+        foreach ($dirs as $dir) {
+            if (! File::isDirectory($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
+        }
     }
 }
