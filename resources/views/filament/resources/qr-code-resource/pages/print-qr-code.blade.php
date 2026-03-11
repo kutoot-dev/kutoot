@@ -2,15 +2,7 @@
     <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg shadow-sm">
         @php
             $url = route('qr.scan', ['token' => $record->token]);
-            $qrCode = \Endroid\QrCode\Builder\Builder::create()
-                ->data($url)
-                ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
-                ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
-                ->size(400)
-                ->margin(10)
-                ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
-                ->build();
-            $dataUri = $qrCode->getDataUri();
+            $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 400);
         @endphp
 
         <div class="mb-4">
@@ -36,7 +28,7 @@
             <style>
                 @media print {
                     @page {
-                        size: 800px 1280px; /* Approximate 8-inch tablet ratio */
+                        size: {{ \App\Services\SettingService::get('qr_print_width_in', 6) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 4) }}in;
                         margin: 0;
                     }
                     body {
@@ -59,30 +51,32 @@
                         align-items: center;
                         justify-content: center;
                         text-align: center;
-                        padding: 2rem;
+                        padding: 1rem;
                         background-color: #fffbeb !important; /* Amber-50 */
                     }
                     .logo {
-                        width: 400px;
-                        margin-bottom: 3rem;
+                        width: 25%;
+                        max-width: 120px;
+                        margin-bottom: 0.5rem;
                     }
                     .qr-image {
-                        width: 500px;
-                        height: 500px;
-                        margin-bottom: 2rem;
-                        border: 10px solid white;
-                        border-radius: 20px;
+                        width: 55%;
+                        max-width: 200px;
+                        height: auto;
+                        margin-bottom: 0.5rem;
+                        border: 4px solid white;
+                        border-radius: 12px;
                     }
                     .code-text {
-                        font-size: 60px;
+                        font-size: 1.5rem;
                         font-weight: 800; /* Bold */
-                        margin-top: 2rem;
+                        margin-top: 0.5rem;
                         color: #1f2937; /* Gray-800 */
                     }
                     .url-text {
-                        font-size: 24px;
+                        font-size: 0.6rem;
                         color: #6b7280; /* Gray-500 */
-                        margin-top: 1rem;
+                        margin-top: 0.25rem;
                     }
                 }
             </style>
@@ -98,11 +92,11 @@
             function printQrCode() {
                 const printContent = document.getElementById('qr-print-template').innerHTML;
                 const originalContents = document.body.innerHTML;
-                
+
                 document.body.innerHTML = printContent;
-                
+
                 window.print();
-                
+
                 // Restore content and reload to retain event listeners/state
                 document.body.innerHTML = originalContents;
                 window.location.reload();

@@ -7,14 +7,7 @@ use App\Http\Requests\GenerateBatchQrRequest;
 use App\Http\Requests\LinkQrRequest;
 use App\Models\MerchantLocation;
 use App\Models\QrCode;
-use Endroid\QrCode\Color\Color;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\Label\Label;
-use Endroid\QrCode\Logo\Logo;
-use Endroid\QrCode\QrCode as EndroidQrCode;
-use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\Writer\PngWriter;
+use App\Services\QrCodeBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -77,31 +70,7 @@ class ExecutiveQrController extends Controller
 
     public function download(QrCode $qrCode)
     {
-        $url = $qrCode->url;
-
-        $writer = new PngWriter;
-
-        $qr = new EndroidQrCode($url);
-        $qr->setEncoding(new Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(ErrorCorrectionLevel::High)
-            ->setSize(300)
-            ->setMargin(10)
-            ->setRoundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->setForegroundColor(new Color(0, 0, 0))
-            ->setBackgroundColor(new Color(255, 255, 255));
-
-        $logoPath = public_path('images/kutoot-initial-logo.svg');
-        $logo = null;
-        if (file_exists($logoPath)) {
-            $logo = new Logo($logoPath);
-            $logo->setResizeToWidth(50)
-                ->setPunchoutBackground(true);
-        }
-
-        $label = new Label($qrCode->unique_code);
-        $label->setTextColor(new Color(79, 70, 229));
-
-        $result = $writer->write($qr, $logo, $label);
+        $result = QrCodeBuilder::buildResult($qrCode->url, 300);
 
         return response($result->getString())
             ->header('Content-Type', $result->getMimeType())

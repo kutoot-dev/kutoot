@@ -118,9 +118,11 @@ class ManageSettings extends Page
             'branding' => [
                 'label' => 'Branding',
                 'icon' => Heroicon::OutlinedPhoto,
-                'description' => 'Brand assets used across the platform',
+                'description' => 'Brand assets and QR print settings',
                 'fields' => [
                     'qr_logo' => ['label' => 'QR Code Logo', 'type' => 'file', 'sensitive' => false],
+                    'qr_print_width_in' => ['label' => 'QR Print Page Width (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 6],
+                    'qr_print_height_in' => ['label' => 'QR Print Page Height (inches)', 'type' => 'number', 'sensitive' => false, 'default' => 4],
                 ],
             ],
         ];
@@ -144,7 +146,8 @@ class ManageSettings extends Page
                     $value = $dbSetting->is_sensitive ? '' : AdminSetting::castValue($dbSetting->value, $dbSetting->type);
                 }
                 else {
-                    $fallbackValue = SettingService::get($key);
+                    $default = $fieldDef['default'] ?? null;
+                    $fallbackValue = SettingService::get($key, $default);
                     // Don't pre-fill sensitive values from env
                     $value = $fieldDef['sensitive'] ? '' : $fallbackValue;
                 }

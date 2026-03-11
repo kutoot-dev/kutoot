@@ -13,6 +13,7 @@
 
         @media print {
             @page {
+                size: {{ \App\Services\SettingService::get('qr_print_width_in', 6) }}in {{ \App\Services\SettingService::get('qr_print_height_in', 4) }}in;
                 margin: 0;
             }
             body {
@@ -80,13 +81,13 @@
             font-size: 8px;
             font-weight: bold;
             margin-top: 1mm;
-            color: #333;
+            color: #1f2937; /* Gray-800 on background */
             white-space: nowrap;
         }
 
         .url-text {
             font-size: 5px;
-            color: #666;
+            color: #6b7280;
             margin-top: 0.5mm;
             white-space: nowrap;
             overflow: hidden;
@@ -138,7 +139,7 @@
     <div class="toolbar no-print">
         <a href="javascript:history.back()" class="back-btn">&larr; Back to QR Codes</a>
         <div>
-            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | Layout: {{ $layout }} | Size: {{ $width }}x{{ $height }}mm</span>
+            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | Layout: {{ $layout }} | Size: {{ $width }}x{{ $height }}mm | Page: 6"x4"</span>
             <button class="print-btn" onclick="window.print()">Print Now</button>
         </div>
     </div>
@@ -148,18 +149,11 @@
         @foreach($qrCodes as $record)
             @php
                 $url = route('qr.scan', ['token' => $record->token]);
-                $qrCode = \Endroid\QrCode\Builder\Builder::create()
-                    ->data($url)
-                    ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
-                    ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
-                    ->size(200) /* Higher internal resolution */
-                    ->margin(0)
-                    ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
-                    ->build();
+                $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 200);
             @endphp
             <div class="sticker-card">
                 <img src="{{ asset('images/kutoot-name-logo.svg') }}" alt="Kutoot" class="logo" />
-                <img src="{{ $qrCode->getDataUri() }}" alt="QR Code" class="qr-image" />
+                <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
                 <div class="code-text">{{ $record->unique_code }}</div>
             </div>
         @endforeach

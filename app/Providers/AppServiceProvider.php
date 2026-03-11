@@ -10,6 +10,9 @@ use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
@@ -90,6 +93,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(static function ($user, $ability) {
             return $user->hasRole('Super Admin') ? true : null;
         });
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+            fn (): string => Blade::render('@livewire(\'optimize-server-actions\')'),
+        );
 
         // Scramble: register Bearer token auth so docs show the Authorize input
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
