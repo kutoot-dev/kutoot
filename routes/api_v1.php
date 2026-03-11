@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CampaignController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\NewsletterController;
+use App\Http\Controllers\Api\V1\PlatformTermsController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FeaturedBannerController;
 use App\Http\Controllers\Api\V1\HeroSettingController;
@@ -108,6 +109,13 @@ Route::get('/tags', [TagController::class, 'index'])
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
     ->middleware('throttle:5,1')
     ->name('api.v1.newsletter.subscribe');
+
+// ── Platform Terms (public + auth) ──────────────────────────────────────
+Route::get('/terms/current', [PlatformTermsController::class, 'current'])
+    ->name('api.v1.terms.current');
+Route::post('/terms/accept', [PlatformTermsController::class, 'accept'])
+    ->middleware('auth:sanctum')
+    ->name('api.v1.terms.accept');
 
 // ── Merchant Location Registration & Auth (public) ─────────────────────
 Route::prefix('merchant-locations')->group(function () {

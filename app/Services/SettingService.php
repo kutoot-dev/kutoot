@@ -49,17 +49,40 @@ class SettingService
         // Stamps
         'stamp_edit_duration_minutes' => ['config' => 'services.stamps.edit_duration_minutes'],
 
-        // Storage
+        // Storage (object_storage_driver: 'local'|'s3'; getStorageDisk() maps to Laravel disk 'public'|'s3')
+        'object_storage_driver' => ['env' => 'OBJECT_STORAGE_DRIVER'],
+        'max_upload_size_mb' => ['env' => 'MAX_UPLOAD_SIZE_MB'],
         'aws_access_key_id' => ['env' => 'AWS_ACCESS_KEY_ID'],
         'aws_secret_access_key' => ['env' => 'AWS_SECRET_ACCESS_KEY'],
         'aws_default_region' => ['env' => 'AWS_DEFAULT_REGION'],
         'aws_bucket' => ['env' => 'AWS_BUCKET'],
-        'media_disk' => ['env' => 'MEDIA_DISK'],
+        'aws_url' => ['env' => 'AWS_URL'],
+        'aws_endpoint' => ['env' => 'AWS_ENDPOINT'],
+        'aws_use_path_style_endpoint' => ['env' => 'AWS_USE_PATH_STYLE_ENDPOINT'],
 
         // QR Print
         'qr_print_width_in' => ['env' => 'QR_PRINT_WIDTH_IN'],
         'qr_print_height_in' => ['env' => 'QR_PRINT_HEIGHT_IN'],
     ];
+
+    /**
+     * Get the active storage disk name for Laravel ('public' or 's3').
+     * Single storage config: no separate media vs filesystem disk.
+     */
+    public static function getStorageDisk(): string
+    {
+        $driver = static::get('object_storage_driver');
+        if (blank($driver)) {
+            $driver = AdminSetting::get('media_disk');
+            if (blank($driver)) {
+                $driver = env('OBJECT_STORAGE_DRIVER');
+            }
+            if (blank($driver)) {
+                $driver = (env('FILESYSTEM_DISK') === 's3' || env('FILESYSTEM_DRIVER') === 's3') ? 's3' : 'local';
+            }
+        }
+        return ($driver === 's3') ? 's3' : 'public';
+    }
 
     /**
      * Get a setting value with full fallback chain: DB → config() → env() → default.
@@ -88,6 +111,15 @@ class SettingService
             if (! blank($envValue)) {
                 return $envValue;
             }
+        }
+
+        // Special fallbacks for storage
+        if ($key === 'object_storage_driver') {
+            $fs = env('FILESYSTEM_DISK') ?? env('FILESYSTEM_DRIVER');
+            return ($fs === 's3') ? 's3' : ($default ?? 'local');
+        }
+        if ($key === 'max_upload_size_mb') {
+            return (int) (env('MAX_UPLOAD_SIZE_MB') ?: ($default ?? 100));
         }
 
         return $default;
@@ -180,12 +212,16 @@ class SettingService
      */
     public static function getPublicConfig(): array
     {
+        $maxMb = (int) static::get('max_upload_size_mb', 100);
+
         return [
             'currency' => static::get('app_currency', 'INR'),
             'razorpay_key_id' => static::get('razorpay_key_id', ''),
             'recaptcha_site_key' => static::get('recaptcha_site_key', ''),
             'recaptcha_enabled' => (bool) static::get('recaptcha_enabled', false),
             'auth_login_methods' => static::get('auth_login_methods', 'otp'),
+            'max_upload_size_mb' => $maxMb,
+            'max_upload_size_bytes' => $maxMb * 1024 * 1024,
         ];
     }
 }

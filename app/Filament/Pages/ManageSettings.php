@@ -9,6 +9,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -104,15 +105,74 @@ class ManageSettings extends Page
                 ],
             ],
             'storage' => [
-                'label' => 'Storage (S3)',
+                'label' => 'Object Storage',
                 'icon' => Heroicon::OutlinedCloudArrowUp,
-                'description' => 'AWS S3 storage configuration for file uploads',
+                'description' => 'Storage mode (Local or S3/R2), upload limits, and S3 credentials',
                 'fields' => [
-                    'aws_access_key_id' => ['label' => 'AWS Access Key ID', 'type' => 'text', 'sensitive' => false],
-                    'aws_secret_access_key' => ['label' => 'AWS Secret Access Key', 'type' => 'password', 'sensitive' => true],
-                    'aws_default_region' => ['label' => 'AWS Region', 'type' => 'text', 'sensitive' => false],
-                    'aws_bucket' => ['label' => 'AWS Bucket', 'type' => 'text', 'sensitive' => false],
-                    'media_disk' => ['label' => 'Media Disk', 'type' => 'select', 'options' => ['s3' => 'S3', 'public' => 'Public (local)'], 'sensitive' => false],
+                    'object_storage_driver' => [
+                        'label' => 'Storage Mode *',
+                        'type' => 'select',
+                        'options' => ['local' => 'Local', 's3' => 'S3 / R2'],
+                        'sensitive' => false,
+                        'helperText' => 'Local stores files on server; S3 uses AWS S3, Cloudflare R2, or compatible storage.',
+                        'default' => 'local',
+                    ],
+                    'max_upload_size_mb' => [
+                        'label' => 'Max Upload Size (MB) *',
+                        'type' => 'number',
+                        'sensitive' => false,
+                        'helperText' => 'Maximum file size for uploads. Used by Media Library, Filament, and API validation.',
+                        'default' => 100,
+                    ],
+                    'aws_bucket' => [
+                        'label' => 'AWS Bucket *',
+                        'type' => 'text',
+                        'sensitive' => false,
+                        'helperText' => 'Bucket name (e.g. fls-xxxx for R2).',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_default_region' => [
+                        'label' => 'AWS Region *',
+                        'type' => 'text',
+                        'sensitive' => false,
+                        'helperText' => 'Region code (e.g. us-east-1). Use "auto" for Cloudflare R2.',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_access_key_id' => [
+                        'label' => 'AWS Access Key ID *',
+                        'type' => 'text',
+                        'sensitive' => false,
+                        'helperText' => 'Access key for S3/R2.',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_secret_access_key' => [
+                        'label' => 'AWS Secret Access Key *',
+                        'type' => 'password',
+                        'sensitive' => true,
+                        'helperText' => 'Secret key for S3/R2.',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_url' => [
+                        'label' => 'Public URL *',
+                        'type' => 'text',
+                        'sensitive' => false,
+                        'helperText' => 'Base URL for public file access (e.g. https://bucket.xxx.laravel.cloud). Must be the public URL, not the API endpoint.',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_endpoint' => [
+                        'label' => 'Custom Endpoint',
+                        'type' => 'text',
+                        'sensitive' => false,
+                        'helperText' => 'S3 API endpoint. Required for R2, Spaces, MinIO. Leave empty for standard AWS S3.',
+                        'visibleWhen' => 's3',
+                    ],
+                    'aws_use_path_style_endpoint' => [
+                        'label' => 'Path-style Endpoint',
+                        'type' => 'toggle',
+                        'sensitive' => false,
+                        'helperText' => 'Use endpoint/bucket instead of bucket.endpoint. Usually false.',
+                        'visibleWhen' => 's3',
+                    ],
                 ],
             ],
             'branding' => [
@@ -180,6 +240,7 @@ class ManageSettings extends Page
             foreach ($groupDef['fields'] as $key => $fieldDef) {
                 $dbSetting = AdminSetting::find($key);
                 $source = ($dbSetting && !blank($dbSetting->value)) ? 'Database' : 'Environment (.env)';
+                $helperText = $fieldDef['helperText'] ?? "Source: {$source}";
 
                 $field = match ($fieldDef['type']) {
                         'password' => TextInput::make($key)
@@ -187,26 +248,26 @@ class ManageSettings extends Page
                         ->password()
                         ->revealable()
                         ->placeholder($fieldDef['sensitive'] ? '••••••••' : '')
-                        ->helperText("Source: {$source}"),
+                        ->helperText($helperText),
 
                         'number' => TextInput::make($key)
                         ->label($fieldDef['label'])
                         ->numeric()
-                        ->helperText("Source: {$source}"),
+                        ->helperText($helperText),
 
                         'select' => Select::make($key)
                         ->label($fieldDef['label'])
                         ->options($fieldDef['options'] ?? [])
-                        ->helperText("Source: {$source}"),
+                        ->helperText($helperText),
 
                         'toggle' => Toggle::make($key)
                         ->label($fieldDef['label'])
-                        ->helperText("Source: {$source}"),
+                        ->helperText($helperText),
 
                         'file' => FileUpload::make($key)
                         ->label($fieldDef['label'])
                         ->image()
-                        ->disk(fn() => \App\Services\SettingService::get('media_disk', 'public'))
+                        ->disk(fn () => \App\Services\SettingService::getStorageDisk())
                         ->directory('settings')
                         ->visibility('public')
                         ->imagePreviewHeight('100')
@@ -214,9 +275,15 @@ class ManageSettings extends Page
 
                         default => TextInput::make($key)
                         ->label($fieldDef['label'])
-                        ->helperText("Source: {$source}"),
+                        ->helperText($helperText),
                     };
 
+                if ($key === 'object_storage_driver') {
+                    $field = $field->live();
+                }
+                if (isset($fieldDef['visibleWhen']) && $fieldDef['visibleWhen'] === 's3') {
+                    $field = $field->visible(fn (Get $get): bool => $get('object_storage_driver') === 's3');
+                }
                 $fields[] = $field;
             }
 

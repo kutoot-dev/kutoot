@@ -23,7 +23,7 @@ class QrBackgroundService
         $uploadedPath = AdminSetting::get('qr_background');
 
         if ($uploadedPath) {
-            $disk = SettingService::get('media_disk', 'public');
+            $disk = SettingService::getStorageDisk();
             try {
                 $diskInstance = Storage::disk($disk);
 
@@ -38,6 +38,7 @@ class QrBackgroundService
                 ]);
             }
         }
+        
 
         return asset(static::$defaultPath);
     }

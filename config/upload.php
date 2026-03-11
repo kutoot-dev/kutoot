@@ -3,12 +3,10 @@
 return [
 
     /*
-     * The maximum file size for uploads in kilobytes.
-     * This value is used across all Filament forms (maxSize)
-     * and API validation rules (max:).
-     *
-     * Default: 2048 KB (2 MB)
+     * Maximum file size for uploads. Single global config: MAX_UPLOAD_SIZE_MB (default 100).
+     * Used across Filament forms (maxSize), API validation, and Media Library.
+     * Can be overridden from Admin Panel → System Settings → Object Storage.
      */
-    'max_file_size_kb' => (int) env('UPLOAD_MAX_FILE_SIZE', 2048),
+    'max_file_size_kb' => (int) env('MAX_UPLOAD_SIZE_MB', 100) * 1024,
 
 ];

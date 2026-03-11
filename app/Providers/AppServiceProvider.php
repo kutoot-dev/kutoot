@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\SmsContract;
+use App\Services\SettingService;
 use App\Services\Sms\SmsManager;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
 
@@ -94,6 +96,36 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Super Admin') ? true : null;
         });
 
+        // Storage: override disk and upload size from admin settings
+        try {
+            $storageDisk = SettingService::getStorageDisk();
+            Config::set('media-library.disk_name', $storageDisk);
+            Config::set('filament.default_filesystem_disk', $storageDisk);
+
+            $maxMb = (int) SettingService::get('max_upload_size_mb', 100);
+            if ($maxMb > 0) {
+                Config::set('upload.max_file_size_kb', $maxMb * 1024);
+                Config::set('media-library.max_file_size', $maxMb * 1024 * 1024);
+            }
+
+            if ($storageDisk === 's3') {
+                Config::set('filesystems.disks.s3', array_merge(config('filesystems.disks.s3', []), [
+                    'key' => SettingService::get('aws_access_key_id') ?: config('filesystems.disks.s3.key'),
+                    'secret' => SettingService::get('aws_secret_access_key') ?: config('filesystems.disks.s3.secret'),
+                    'region' => SettingService::get('aws_default_region') ?: config('filesystems.disks.s3.region'),
+                    'bucket' => SettingService::get('aws_bucket') ?: config('filesystems.disks.s3.bucket'),
+                    'url' => SettingService::get('aws_url') ?: config('filesystems.disks.s3.url'),
+                    'endpoint' => SettingService::get('aws_endpoint') ?: config('filesystems.disks.s3.endpoint'),
+                    'use_path_style_endpoint' => in_array(
+                        strtolower((string) SettingService::get('aws_use_path_style_endpoint', false)),
+                        ['1', 'true', 'yes'],
+                        true
+                    ),
+                ]));
+            }
+        } catch (\Throwable $e) {
+            // Skip when DB/config not ready (e.g. config:cache, migrations)
+        }
 
         // Scramble: register Bearer token auth so docs show the Authorize input
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {

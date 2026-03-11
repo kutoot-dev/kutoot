@@ -29,11 +29,9 @@ MEDIA_DISK=public
 # Livewire temp uploads use local disk (avoids S3 presigned URL ACL errors)
 LIVEWIRE_TEMP_UPLOAD_DISK=local
 
-# UPLOAD_MAX_FILE_SIZE is in KB (102400 = 100MB). Was 104857600 which = 100GB!
-UPLOAD_MAX_FILE_SIZE=102400
+# Single global upload limit in MB (default 100). Used by Media Library, Filament, API.
+MAX_UPLOAD_SIZE_MB=100
 ```
-
-**Keep MEDIA_MAX_FILE_SIZE as 104857600** (bytes = 100MB) – that one is correct.
 
 ---
 

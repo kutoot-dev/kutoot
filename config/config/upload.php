@@ -9,6 +9,6 @@ return [
      *
      * Default: 2048 KB (2 MB)
      */
-    'max_file_size_kb' => (int) env('UPLOAD_MAX_FILE_SIZE', 2048),
+    'max_file_size_kb' => (int) env('MAX_UPLOAD_SIZE_MB', 100) * 1024,
 
 ];

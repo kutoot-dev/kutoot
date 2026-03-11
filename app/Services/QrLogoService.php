@@ -18,7 +18,7 @@ class QrLogoService
         $defaultPath = public_path('images/k-logo.png');
 
         $uploadedPath = AdminSetting::get('qr_logo');
-        $disk = SettingService::get('media_disk', 'public');
+        $disk = SettingService::getStorageDisk();
 
         if ($uploadedPath) {
             try {

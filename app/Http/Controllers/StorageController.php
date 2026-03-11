@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SettingService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -14,7 +15,7 @@ class StorageController extends Controller
      */
     public function stream(string $path): StreamedResponse
     {
-        $disk = Storage::disk('public');
+        $disk = Storage::disk(SettingService::getStorageDisk());
 
         if (!$disk->exists($path)) {
             abort(404, 'File not found');

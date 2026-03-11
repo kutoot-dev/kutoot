@@ -15,7 +15,7 @@ Route::get('/debug-error', function () {
 // Temporary: debug S3 storage access (remove in production)
 Route::get('/debug-storage', function () {
     $path = request('path', '72/01KJS9EGD39ZMH2J710N2E4ZNW.mp4');
-    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+    $disk = \Illuminate\Support\Facades\Storage::disk(\App\Services\SettingService::getStorageDisk());
     $driver = config('filesystems.default');
     $exists = $disk->exists($path);
     $error = null;

@@ -38,18 +38,7 @@ return [
             'report' => false,
         ],
 
-        'public' => (env('FILESYSTEM_DRIVER') === 's3' || env('FILESYSTEM_DISK') === 's3') ? [
-            'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION', 'ap-south-1'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_PUBLIC_URL') ?: 'https://'.env('AWS_BUCKET').'.s3.'.env('AWS_DEFAULT_REGION', 'ap-south-1').'.amazonaws.com',
-            'visibility' => 'public',
-            'throw' => false,
-            'report' => false,
-            'options' => ['ACL' => ''], // Bucket uses policy for public access (ACLs disabled)
-        ] : [
+        'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
