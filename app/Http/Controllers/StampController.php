@@ -12,7 +12,7 @@ class StorageController extends Controller
      * Stream files from storage (S3 or local) via /storage/{path}.
      * Works with private S3 buckets - Laravel uses IAM credentials to fetch.
      */
-    public function stream(string $path): StreamedResponse|never
+    public function stream(string $path): StreamedResponse
     {
         $disk = Storage::disk('public');
 
@@ -26,7 +26,8 @@ class StorageController extends Controller
             $response->headers->set('Accept-Ranges', 'bytes');
 
             return $response;
-        } catch (\Throwable $e) {
+        }
+        catch (\Throwable $e) {
             Log::error('Storage stream failed', [
                 'path' => $path,
                 'error' => $e->getMessage(),
@@ -44,16 +45,16 @@ class StorageController extends Controller
     {
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         return match ($ext) {
-            'mp4' => 'video/mp4',
-            'webm' => 'video/webm',
-            'ogg' => 'video/ogg',
-            'mov' => 'video/quicktime',
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'gif' => 'image/gif',
-            'webp' => 'image/webp',
-            'svg' => 'image/svg+xml',
-            default => 'application/octet-stream',
-        };
+                'mp4' => 'video/mp4',
+                'webm' => 'video/webm',
+                'ogg' => 'video/ogg',
+                'mov' => 'video/quicktime',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'svg' => 'image/svg+xml',
+                default => 'application/octet-stream',
+            };
     }
 }
