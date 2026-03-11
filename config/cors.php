@@ -26,6 +26,7 @@ return [
             'https://kutoot.com',
 	    'https://www.kutoot.com',
 	    'https://main.d1m3jak1924r3d.amplifyapp.com',
+        'https://main.d2gkmd4xrkda1d.amplifyapp.com',
 	    'https://sanjeev-test.d1m3jak1924r3d.amplifyapp.com',
 	    'https://kutoot-backend.s3.ap-south-1.amazonaws.com'
 	   
