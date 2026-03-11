@@ -94,10 +94,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Super Admin') ? true : null;
         });
 
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-            fn (): string => Blade::render('@livewire(\'optimize-server-actions\')'),
-        );
 
         // Scramble: register Bearer token auth so docs show the Authorize input
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
