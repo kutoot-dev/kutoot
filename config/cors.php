@@ -23,6 +23,7 @@ return [
             'http://localhost:3001',
             'http://127.0.0.1:3000',
             'https://admin.kutoot.com',
+            'https://frontend.kutoot.com',
             'https://kutoot.com',
 	    'https://www.kutoot.com',
 	    'https://main.d1m3jak1924r3d.amplifyapp.com',
