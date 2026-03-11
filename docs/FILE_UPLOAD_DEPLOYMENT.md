@@ -41,15 +41,18 @@ MAX_UPLOAD_SIZE_MB=100
 cd /var/www/kutoot
 git pull
 
-# Ensure livewire-tmp exists for temp uploads
-mkdir -p storage/app/livewire-tmp
-chmod 775 storage/app/livewire-tmp
+# Ensure storage/framework directories exist (fixes "No such file or directory" for cache/rate limiting)
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/app/livewire-tmp storage/logs
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache  # or your web server user
 
 php artisan config:clear
 php artisan config:cache
 php artisan route:clear
 php artisan route:cache
 ```
+
+**Note:** `AppServiceProvider::ensureStorageDirectoriesExist()` also creates these directories at boot when missing, but running `mkdir` and `chmod` during deploy ensures correct permissions (web server needs write access).
 
 ---
 
