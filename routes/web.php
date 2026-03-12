@@ -37,6 +37,9 @@ Route::get('/campaigns/{campaign}', [\App\Http\Controllers\CampaignController::c
 Route::get('/coupons', [\App\Http\Controllers\CouponController::class, 'index'])->name('coupons.index');
 Route::get('/subscriptions', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscriptions.index');
 
+// QR scan (public - no auth) - customers scan to reach store / pay bill
+Route::get('/q/{token}', [\App\Http\Controllers\QrScanController::class, 'scan'])->name('qr.scan');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/stamps', [\App\Http\Controllers\StampController::class, 'index'])->name('stamps.index');
@@ -50,7 +53,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/executive/qr/{qrCode}/download', [\App\Http\Controllers\ExecutiveQrController::class, 'download'])->name('executive.qr.download');
     Route::post('/executive/qr/link', [\App\Http\Controllers\ExecutiveQrController::class, 'link'])->name('executive.qr.link');
     Route::post('/admin/qr/generate', [\App\Http\Controllers\ExecutiveQrController::class, 'generateBatch'])->name('admin.qr.generate');    Route::get('/admin/qr/bulk-print', [\App\Http\Controllers\QrCodePrintController::class, 'bulkPrint'])->name('qr-code.bulk-print');
-    Route::get('/q/{token}', [\App\Http\Controllers\QrScanController::class, 'scan'])->name('qr.scan');
 
     // Subscriptions
     Route::post('/subscriptions/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('subscriptions.upgrade');

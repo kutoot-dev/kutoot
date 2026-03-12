@@ -28,6 +28,9 @@ class MerchantLocation extends Model implements HasMedia
         'state_id',
         'city_id',
         'branch_name',
+        'store_email',
+        'year_of_establishment',
+        'business_ownership_type',
         'commission_percentage',
         'star_rating',
         'is_active',
@@ -37,6 +40,34 @@ class MerchantLocation extends Model implements HasMedia
         'latitude',
         'longitude',
         'address',
+        'area_locality',
+        'city_name',
+        'state_name',
+        'pin_code',
+        'google_maps_link',
+        'owner_name',
+        'owner_mobile_whatsapp',
+        'owner_email',
+        'has_business_partner',
+        'partner_name',
+        'partner_mobile',
+        'partner_role',
+        'average_monthly_sales_range',
+        'average_profit_margin_range',
+        'kutoot_customer_discount_offer',
+        'exclusive_discount_for_kutoot',
+        'max_discount_policy',
+        'minimum_bill_amount_for_discount',
+        'creative_consent',
+        'requested_creatives',
+        'gst_registration_status',
+        'preferred_settlement_method',
+        'settlement_details',
+        'declaration_accepted',
+        'communication_consent',
+        'additional_comments',
+        'profile_completed_at',
+        'profile_completed_by',
         'gst_number',
         'pan_number',
         'bank_name',
@@ -58,6 +89,13 @@ class MerchantLocation extends Model implements HasMedia
             'monthly_target_type' => TargetType::class,
             'monthly_target_value' => 'decimal:2',
             'deduct_commission_from_target' => 'boolean',
+            'has_business_partner' => 'boolean',
+            'exclusive_discount_for_kutoot' => 'boolean',
+            'requested_creatives' => 'array',
+            'declaration_accepted' => 'boolean',
+            'communication_consent' => 'boolean',
+            'minimum_bill_amount_for_discount' => 'decimal:2',
+            'profile_completed_at' => 'datetime',
         ];
     }
 
@@ -100,6 +138,14 @@ class MerchantLocation extends Model implements HasMedia
     public function city(): BelongsTo
     {
         return $this->belongsTo(\Nnjeim\World\Models\City::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function profileCompletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'profile_completed_by');
     }
 
     /**
@@ -237,6 +283,39 @@ class MerchantLocation extends Model implements HasMedia
             ->acceptsMimeTypes([
                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                 'video/mp4', 'video/webm', 'video/quicktime',
+            ]);
+
+        $this->addMediaCollection('store_logo')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+            ]);
+
+        $this->addMediaCollection('store_photos')
+            ->acceptsMimeTypes([
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+                'video/mp4', 'video/webm', 'video/quicktime',
+            ]);
+
+        $this->addMediaCollection('gst_certificate')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+            ]);
+
+        $this->addMediaCollection('pan_card')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+            ]);
+
+        $this->addMediaCollection('aadhaar_card')
+            ->singleFile()
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg', 'image/png', 'image/webp', 'image/gif',
             ]);
     }
 
