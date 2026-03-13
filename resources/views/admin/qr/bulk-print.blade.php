@@ -85,7 +85,7 @@
 
         .sticker-card .code-text {
             position: absolute;
-            bottom: 17%;
+            bottom: 26%;
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.70rem;
