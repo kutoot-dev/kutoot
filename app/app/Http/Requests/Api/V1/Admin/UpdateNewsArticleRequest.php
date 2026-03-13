@@ -20,7 +20,7 @@ class UpdateNewsArticleRequest extends FormRequest
             'published_at' => ['nullable', 'date'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:' . config('upload.max_file_size_kb')],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:' . (config('upload.max_upload_size_mb') * 1024)],
         ];
     }
 

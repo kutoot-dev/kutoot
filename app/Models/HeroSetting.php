@@ -53,6 +53,21 @@ class HeroSetting extends Model implements HasMedia
             ->fit(Fit::Crop, 800, 450)
             ->format('webp')
             ->quality(85)
+            ->nonQueued()
+            ->performOnCollections('hero_media');
+
+        $this->addMediaConversion('preview')
+            ->fit(Fit::Contain, 1920, 1080)
+            ->format('webp')
+            ->quality(95)
+            ->withResponsiveImages()
+            ->performOnCollections('hero_media');
+
+        $this->addMediaConversion('mobile')
+            ->fit(Fit::Contain, 828, 466)
+            ->format('webp')
+            ->quality(90)
+            ->nonQueued()
             ->performOnCollections('hero_media');
     }
 

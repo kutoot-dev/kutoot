@@ -24,12 +24,34 @@ class HeroSettingController extends Controller
         }
 
         $media = $setting->getMedia('hero_media');
-        $mediaArray = $media->map(fn ($m) => [
-            'id' => $m->id,
-            'url' => $m->getUrl(),
-            'preview' => $m->hasGeneratedConversion('thumb') ? $m->getUrl('thumb') : $m->getUrl(),
-            'mime_type' => $m->mime_type,
-        ])->values()->toArray();
+        $mediaArray = $media->map(function ($m) {
+            $isVideo = str_starts_with($m->mime_type, 'video/');
+
+            $item = [
+                'id' => $m->id,
+                'url' => $m->getUrl(),
+                'thumb' => $m->hasGeneratedConversion('thumb') ? $m->getUrl('thumb') : $m->getUrl(),
+                'mime_type' => $m->mime_type,
+                'size' => $m->size,
+                'width' => $m->getCustomProperty('width'),
+                'height' => $m->getCustomProperty('height'),
+            ];
+
+            if (! $isVideo) {
+                $item['preview'] = $m->hasGeneratedConversion('preview') ? $m->getUrl('preview') : $m->getUrl();
+                $item['mobile'] = $m->hasGeneratedConversion('mobile') ? $m->getUrl('mobile') : $m->getUrl();
+
+                $responsiveUrls = $m->responsiveImages('preview')->getUrls();
+                if (! empty($responsiveUrls)) {
+                    $item['srcset'] = implode(', ', array_map(
+                        fn ($url) => $url,
+                        $responsiveUrls
+                    ));
+                }
+            }
+
+            return $item;
+        })->values()->toArray();
 
         return response()->json([
             'data' => [

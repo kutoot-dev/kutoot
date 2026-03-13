@@ -33,11 +33,25 @@ class MerchantLocationResource extends JsonResource
             'primary_qr_code' => new QrCodeResource($this->whenLoaded('primaryQrCode')),
             'state' => $this->whenLoaded('state', fn () => ['id' => $this->state->id, 'name' => $this->state->name]),
             'city' => $this->whenLoaded('city', fn () => ['id' => $this->city->id, 'name' => $this->city->name]),
-            'media' => $this->getMedia('media')->map(fn ($media) => [
-                'id' => $media->id,
-                'url' => $media->getUrl(),
-                'thumb' => $media->getUrl('thumb'),
-            ]),
+            'media' => $this->getMedia('media')->map(function ($m) {
+                $isVideo = str_starts_with($m->mime_type, 'video/');
+
+                $item = [
+                    'id' => $m->id,
+                    'url' => $m->getUrl(),
+                    'thumb' => $m->hasGeneratedConversion('thumb') ? $m->getUrl('thumb') : $m->getUrl(),
+                    'mime_type' => $m->mime_type,
+                    'size' => $m->size,
+                    'width' => $m->getCustomProperty('width'),
+                    'height' => $m->getCustomProperty('height'),
+                ];
+
+                if (! $isVideo) {
+                    $item['preview'] = $m->hasGeneratedConversion('preview') ? $m->getUrl('preview') : $m->getUrl();
+                }
+
+                return $item;
+            }),
             'qr_codes_count' => $this->whenCounted('qrCodes'),
             'transactions_count' => $this->whenCounted('transactions'),
             'created_at' => $this->created_at?->toISOString(),
