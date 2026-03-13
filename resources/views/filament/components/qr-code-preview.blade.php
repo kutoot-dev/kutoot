@@ -53,6 +53,7 @@
                     height: auto;
                     border-radius: 12px;
                 }
+                
                 .qr-sticker-print .code-text {
                     position: absolute;
                     bottom: 26%;
