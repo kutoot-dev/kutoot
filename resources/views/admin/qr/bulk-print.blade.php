@@ -8,6 +8,8 @@
         $bgUrl = \App\Services\QrBackgroundService::getBackgroundUrl();
         $widthIn = \App\Services\SettingService::get('qr_print_width_in', 4);
         $heightIn = \App\Services\SettingService::get('qr_print_height_in', 6);
+        /* Slightly reduce height to prevent overflow; small reduction = larger sticker */
+        $safeHeightIn = max(3, $heightIn - 0.01);
     @endphp
     <style>
         @media print {
@@ -15,14 +17,23 @@
                 size: {{ $widthIn }}in {{ $heightIn }}in;
                 margin: 0;
             }
-            body {
-                margin: 0;
-                padding: 0;
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
             .no-print {
                 display: none !important;
+            }
+            /* 1 sticker = 1 page */
+            .sticker-page {
+                page-break-after: always;
+                break-after: page;
+            }
+            .sticker-page:last-child {
+                page-break-after: auto;
+                break-after: auto;
             }
         }
 
@@ -43,14 +54,22 @@
             max-width: {{ $widthIn }}in;
         }
 
+        .sticker-page {
+            width: {{ $widthIn }}in;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
         .sticker-card {
             width: {{ $widthIn }}in;
-            height: {{ $heightIn }}in;
+            height: {{ $safeHeightIn }}in;
             position: relative;
+            padding-top: 0.18in;
+            box-sizing: border-box;
             background-image: url('{{ $bgUrl }}');
             background-size: 100% 100%;
             background-repeat: no-repeat;
-            box-sizing: border-box;
             break-inside: avoid;
         }
 
@@ -59,17 +78,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50%;
+            width: 60%;
             height: auto;
             border-radius: 12px;
         }
 
         .sticker-card .code-text {
             position: absolute;
-            bottom: 16%;
+            bottom: 26%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 1.25rem;
+            font-size: 0.70rem;
             font-weight: 800;
             color: #1f2937;
             white-space: nowrap;
@@ -118,9 +137,10 @@
     <div class="toolbar no-print">
         <a href="javascript:history.back()" class="back-btn">&larr; Back to QR Codes</a>
         <div>
-            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | {{ $widthIn }}" &times; {{ $heightIn }}" vertical</span>
+            <span style="margin-right: 15px; font-size: 14px; color: #4b5563;">Stickers: {{ count($qrCodes) }} | {{ $widthIn }}" &times; {{ $heightIn }}" | Pages: {{ count($qrCodes) }}</span>
             <button class="print-btn" onclick="window.print()">Print Now</button>
         </div>
+        <div class="no-print" style="font-size: 11px; color: #6b7280; margin-top: 4px;">Tip: In print dialog, disable "Headers and footers" for best results.</div>
     </div>
 
     <div class="page-container">
@@ -129,9 +149,11 @@
                 $url = route('qr.scan', ['token' => $record->token]);
                 $dataUri = \App\Services\QrCodeBuilder::buildForUrl($url, 360);
             @endphp
-            <div class="sticker-card">
-                <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
-                <div class="code-text">{{ $record->unique_code }}</div>
+            <div class="sticker-page">
+                <div class="sticker-card">
+                    <img src="{{ $dataUri }}" alt="QR Code" class="qr-image" />
+                    <div class="code-text">{{ $record->unique_code }}</div>
+                </div>
             </div>
         @endforeach
     </div>
