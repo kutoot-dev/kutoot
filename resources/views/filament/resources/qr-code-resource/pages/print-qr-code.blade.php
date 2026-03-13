@@ -51,18 +51,18 @@
                     .qr-sticker-print .qr-image {
                         position: absolute;
                         top: 50%;
-                        left: 44%;
+                        left: 50%;
                         transform: translate(-50%, -50%);
-                        width: 50%;
+                        width: 60%;
                         height: auto;
                         border-radius: 12px;
                     }
                     .qr-sticker-print .code-text {
                         position: absolute;
-                        bottom: 16%;
+                        bottom: 17%;
                         left: 50%;
                         transform: translateX(-50%);
-                        font-size: 1.25rem;
+                        font-size: 0.70rem;
                         font-weight: 800;
                         color: #1f2937;
                         white-space: nowrap;
