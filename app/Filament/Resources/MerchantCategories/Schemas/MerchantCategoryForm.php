@@ -21,13 +21,13 @@ class MerchantCategoryForm
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb')),
+                    ->maxSize(config('upload.max_upload_size_mb') * 1024),
                 SpatieMediaLibraryFileUpload::make('icon')
                     ->collection('icon')
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb')),
+                    ->maxSize(config('upload.max_upload_size_mb') * 1024),
                 TextInput::make('serial')
                     ->required()
                     ->numeric()

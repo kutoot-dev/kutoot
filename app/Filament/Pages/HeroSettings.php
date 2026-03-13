@@ -97,7 +97,7 @@ class HeroSettings extends Page
                         'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                         'video/mp4', 'video/webm', 'video/quicktime',
                     ])
-                    ->maxSize(config('upload.max_file_size_kb', 10240))
+                    ->maxSize((config('upload.max_upload_size_mb') ?? 10) * 1024)
                     ->conversion('thumb')
                     ->helperText('Add multiple images and/or videos for the hero carousel. Images and videos will rotate in the hero section.'),
             ])

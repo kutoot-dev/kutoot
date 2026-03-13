@@ -19,7 +19,7 @@ class UpdateStoreBannerRequest extends FormRequest
             'link_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:' . config('upload.max_file_size_kb')],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:' . (config('upload.max_upload_size_mb') * 1024)],
         ];
     }
 
