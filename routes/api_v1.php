@@ -234,6 +234,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Subscriptions (auth-protected)
     Route::get('/subscriptions/current', [SubscriptionController::class, 'current'])
         ->name('api.v1.subscriptions.current');
+    Route::post('/subscriptions/record-consent', [SubscriptionController::class, 'recordConsent'])
+        ->name('api.v1.subscriptions.record-consent');
     Route::post('/subscriptions/upgrade', [SubscriptionController::class, 'upgrade'])
         ->name('api.v1.subscriptions.upgrade');
     Route::post('/subscriptions/verify-payment', [SubscriptionController::class, 'verifyPayment'])
