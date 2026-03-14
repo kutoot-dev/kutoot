@@ -31,7 +31,7 @@ class StoreBannerForm
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb')),
+                    ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024),
                 Toggle::make('is_active')
                     ->default(true)
                     ->required(),

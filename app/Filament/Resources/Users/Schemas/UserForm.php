@@ -72,7 +72,7 @@ class UserForm
                     ->collection('avatar')
                     ->image()
                     ->conversion('thumb')
-                    ->maxSize(config('upload.max_file_size_kb'))
+                    ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024)
                     ->label('Profile Picture')
                     ->rules(['nullable', 'image', 'mimes:jpeg,png,webp,svg']),
                 Select::make('primary_campaign_id')

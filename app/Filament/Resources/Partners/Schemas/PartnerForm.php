@@ -22,7 +22,7 @@ class PartnerForm
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb'))
+                    ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024)
                     ->required(),
                 TextInput::make('link')
                     ->label('Website URL')

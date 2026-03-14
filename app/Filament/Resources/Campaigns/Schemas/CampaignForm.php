@@ -131,7 +131,7 @@ class CampaignForm
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',
                             ])
-                            ->maxSize(config('upload.max_file_size_kb'))
+                            ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024)
                             ->conversion('thumb')
                             ->responsiveImages()
                             ->customHeaders(['CacheControl' => 'max-age=86400'])
@@ -157,7 +157,7 @@ class CampaignForm
                             ->acceptedFileTypes([
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                             ])
-                            ->maxSize(config('upload.max_file_size_kb'))
+                            ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024)
                             ->conversion('sponsor_thumb')
                             ->helperText('Recommended size: 400x224px (16:9 aspect ratio).'),
                     ]),

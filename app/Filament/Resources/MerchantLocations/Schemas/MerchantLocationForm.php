@@ -160,7 +160,7 @@ class MerchantLocationForm
                                 'image/jpeg', 'image/png', 'image/webp', 'image/gif',
                                 'video/mp4', 'video/webm', 'video/quicktime',
                             ])
-                            ->maxSize(config('upload.max_file_size_kb'))
+                            ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024)
                             ->conversion('thumb')
                             ->responsiveImages()
                             ->customHeaders(['CacheControl' => 'max-age=86400']),
