@@ -138,4 +138,15 @@ class DiscountCoupon extends Model
     {
         return $this->merchant_location_id ? 'merchant' : 'kutoot';
     }
+
+    /**
+     * Legacy accessor for `status` used in the merchant panel until
+     * approval_status was introduced. Keeping this ensures `$model->status`
+     * returns the same string as approval_status and avoids errors when the
+     * attribute is referenced elsewhere in the codebase.
+     */
+    public function getStatusAttribute(): string
+    {
+        return $this->approval_status?->value ?? '';
+    }
 }

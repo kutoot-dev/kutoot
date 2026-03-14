@@ -53,7 +53,7 @@ class SubscriptionPlanForm
                 Section::make('Stamp Configuration')
                     ->schema([
                         TextInput::make('stamps_on_purchase')
-                            ->label('Bonus Stamps on Purchase')
+                            ->label('Bonus Stamps on Subscribe')
                             ->helperText('Number of stamps awarded when a user purchases this plan.')
                             ->required()
                             ->numeric()

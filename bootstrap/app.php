@@ -18,10 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Force HTTPS URLs first (fixes Livewire Mixed Content behind proxy)
-        $middleware->web(prepend: [
-            \App\Http\Middleware\ForceHttps::class,
-        ]);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,

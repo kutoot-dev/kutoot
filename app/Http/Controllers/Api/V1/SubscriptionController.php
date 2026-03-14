@@ -105,6 +105,9 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'You are already subscribed to this plan.'], 422);
         }
 
+        // Record terms acceptance
+        $this->subscriptionService->recordTermsAcceptance($user, $plan);
+
         $planPrice = (float) $plan->price;
         $campaignSelections = $validated['campaign_selections'] ?? [];
 
@@ -324,6 +327,35 @@ class SubscriptionController extends Controller
         return response()->json([
             'data' => $campaigns,
             'primary_campaign_id' => $primaryCampaignId,
+        ]);
+    }
+
+    /**
+     * Record terms acceptance
+     *
+     * Records that a user has accepted the terms and conditions for a subscription plan.
+     * This creates an audit trail of consent before payment proceeds.
+     *
+     * @response 200 { "message": "Terms accepted", "consent": {} }
+     */
+    public function recordConsent(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'plan_id' => ['required', 'exists:subscription_plans,id'],
+        ]);
+
+        $user = $request->user();
+        $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+
+        $consent = $this->subscriptionService->recordTermsAcceptance($user, $plan);
+
+        return response()->json([
+            'message' => 'Terms and conditions accepted.',
+            'consent' => [
+                'user_id' => $consent->user_id,
+                'plan_id' => $consent->plan_id,
+                'accepted_at' => $consent->accepted_at,
+            ],
         ]);
     }
 }

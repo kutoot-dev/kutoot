@@ -11,10 +11,6 @@ class QrCodePrintController extends Controller
     {
         $request->validate([
             'ids' => 'required|string',
-            'layout' => 'required|in:3-across,single',
-            'sticker_width' => 'required|numeric',
-            'sticker_height' => 'required|numeric',
-            'margin' => 'required|numeric',
         ]);
 
         $ids = explode(',', $request->input('ids'));
@@ -22,10 +18,6 @@ class QrCodePrintController extends Controller
 
         return view('admin.qr.bulk-print', [
             'qrCodes' => $qrCodes,
-            'layout' => $request->input('layout'),
-            'width' => $request->input('sticker_width'),
-            'height' => $request->input('sticker_height'),
-            'margin' => $request->input('margin'),
         ]);
     }
 }

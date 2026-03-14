@@ -37,7 +37,8 @@ class QrCodeController extends Controller
             ->when($request->input('search'), fn ($q, $s) => $q->where(function ($q) use ($s) {
                 $q->where('unique_code', 'like', "%{$s}%")
                     ->orWhere('token', 'like', "%{$s}%");
-            }))
+            }
+            ))
             ->latest()
             ->paginate($request->integer('per_page', 15));
 
@@ -140,5 +141,39 @@ class QrCodeController extends Controller
         $qrCode->load(['merchantLocation.merchant', 'executive']);
 
         return new QrCodeResource($qrCode);
+    }
+
+    /**
+     * Get QR code image.
+     */
+    public function image(QrCode $qrCode)
+    {
+        $url = route('qr.scan', ['token' => $qrCode->token]);
+        $logoPath = \App\Services\QrLogoService::getLogoPath();
+
+        $builder = \Endroid\QrCode\Builder\Builder::create()
+            ->data($url)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
+            ->errorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
+            ->size(300)
+            ->margin(8)
+            ->roundBlockSizeMode(\Endroid\QrCode\RoundBlockSizeMode::Margin)
+            ->foregroundColor(new \Endroid\QrCode\Color\Color(0, 0, 0))
+            ->backgroundColor(new \Endroid\QrCode\Color\Color(255, 255, 255));
+
+        if ($logoPath) {
+            $builder = $builder
+                ->logoPath($logoPath)
+                ->logoResizeToWidth(60)
+                ->logoResizeToHeight(60);
+            // the logo image should include any desired background;
+            // the builder no longer exposes a logoBackgroundColor option
+        }
+
+        $qrCode = $builder->build();
+
+        return response($qrCode->getString())
+            ->header('Content-Type', 'image/png')
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 }

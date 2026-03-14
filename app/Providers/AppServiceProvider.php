@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -46,15 +45,16 @@ class AppServiceProvider extends ServiceProvider
             || (bool) config('app.force_https', false)
             || ($appUrl && str_starts_with($appUrl, 'https://'));
         if ($forceHttps) {
-            URL::forceScheme('https');
+            \Illuminate\Support\Facades\URL::forceScheme('https');
             $rootUrl = $appUrl ? rtrim($appUrl, '/') : null;
             if ($rootUrl && str_starts_with($rootUrl, 'http://')) {
                 $rootUrl = 'https://' . substr($rootUrl, 7);
             }
             if ($rootUrl) {
-                URL::forceRootUrl($rootUrl);
+                \Illuminate\Support\Facades\URL::forceRootUrl($rootUrl);
             }
         }
+
 
         // Register Observers
         \App\Models\QrCode::observe(\App\Observers\QrCodeObserver::class);

@@ -12,6 +12,8 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Illuminate\Support\Facades\Log;
+
 
 class StampService
 {
@@ -22,9 +24,18 @@ class StampService
     public function awardStampsForBill(Transaction $transaction, ?int $campaignId = null): int
     {
         $user = $transaction->user;
+        Log::info('awardStampsForBill called', [
+            'user_id' => $user->id,
+            'transaction_id' => $transaction->id,
+            'campaign_id' => $campaignId,
+            'original_bill_amount' => $transaction->original_bill_amount,
+            'amount' => $transaction->amount,
+        ]);
+
         $campaign = $this->resolveCampaign($user, $campaignId);
 
         if (! $campaign) {
+            Log::warning('awardStampsForBill aborted: campaign could not be resolved', ['user_id' => $user->id, 'campaign_id' => $campaignId]);
             return 0;
         }
 
@@ -33,8 +44,16 @@ class StampService
         $stampCount = $plan ? $plan->calculateStampsForAmount($billAmount) : (int) floor($billAmount / 100);
 
         if ($stampCount <= 0) {
+            Log::info('awardStampsForBill calculated zero stamps', ['user_id' => $user->id, 'bill_amount' => $billAmount]);
             return 0;
         }
+
+        Log::info('awardStampsForBill will create stamps', [
+            'user_id' => $user->id,
+            'campaign_id' => $campaign->id,
+            'stamp_count' => $stampCount,
+            'plan_id' => $plan?->id,
+        ]);
 
         $this->createStamps($user, $campaign, $stampCount, StampSource::BillPayment, $transaction);
 

@@ -22,3 +22,6 @@ Schedule::command('app:recalculate-monthly-targets')->monthlyOn(1, '01:00');
 
 // Release expired stamp reservations every minute
 Schedule::command('stamps:release-expired')->everyMinute();
+
+// Clean up Livewire S3 temporary uploads daily at 1:00 AM
+Schedule::command('livewire:configure-s3-upload-cleanup')->dailyAt('1:00');

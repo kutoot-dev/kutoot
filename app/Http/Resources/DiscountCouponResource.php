@@ -30,6 +30,9 @@ class DiscountCouponResource extends JsonResource
             'expires_at' => $this->expires_at?->toISOString(),
             'is_active' => $this->is_active,
             'approval_status' => $this->approval_status?->value,
+            // legacy clients expect `status`; alias to approval_status so the
+            // storefront shows the correct state after admin approval.
+            'status' => $this->approval_status?->value,
             'rejection_reason' => $this->rejection_reason,
             'source' => $this->source,
             'category' => new CouponCategoryResource($this->whenLoaded('category')),

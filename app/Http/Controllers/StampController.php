@@ -2,59 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
-class StorageController extends Controller
+class StampController extends Controller
 {
-    /**
-     * Stream files from storage (S3 or local) via /storage/{path}.
-     * Works with private S3 buckets - Laravel uses IAM credentials to fetch.
-     */
-    public function stream(string $path): StreamedResponse
+    public function index(Request $request): Response
     {
-        $disk = Storage::disk('public');
+        $user = $request->user();
 
-        if (!$disk->exists($path)) {
-            abort(404, 'File not found');
-        }
-
-        try {
-            $response = $disk->response($path);
-            $response->headers->set('Content-Type', $this->getMimeType($path));
-            $response->headers->set('Accept-Ranges', 'bytes');
-
-            return $response;
-        }
-        catch (\Throwable $e) {
-            Log::error('Storage stream failed', [
-                'path' => $path,
-                'error' => $e->getMessage(),
+        $stamps = $user->stamps()
+            ->with(['campaign:id,reward_name,code,stamp_slots,stamp_slot_min,stamp_slot_max', 'transaction:id,amount,original_bill_amount'])
+            ->latest()
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'code' => $s->code,
+                'source' => $s->source->getLabel(),
+                'campaign_id' => $s->campaign_id,
+                'campaign_name' => $s->campaign?->reward_name,
+                'bill_amount' => (float) ($s->transaction?->original_bill_amount ?: $s->transaction?->amount ?? 0),
+                'created_at' => $s->created_at->diffForHumans(),
+                'editable_until' => $s->editable_until?->toISOString(),
+                'is_editable' => $s->isEditable(),
+                'stamp_config' => $s->campaign && $s->campaign->hasStampConfig() ? [
+                    'slots' => $s->campaign->stamp_slots,
+                    'min' => $s->campaign->stamp_slot_min,
+                    'max' => $s->campaign->stamp_slot_max,
+                ] : null,
             ]);
 
-            if (str_contains($e->getMessage(), '403') || str_contains($e->getMessage(), 'Access Denied')) {
-                abort(403, 'Access denied to file');
-            }
+        $primaryCampaignId = $user->primary_campaign_id;
+        $primaryCampaignName = $user->primaryCampaign?->reward_name;
 
-            abort(404, 'File not found');
-        }
-    }
+        // Group stamps by campaign, with primary campaign first
+        $grouped = $stamps
+            ->groupBy(fn ($s) => $s['campaign_name'] ?? 'No Campaign')
+            ->sortKeysUsing(function (string $a, string $b) use ($primaryCampaignName): int {
+                if ($a === $primaryCampaignName) {
+                    return -1;
+                }
+                if ($b === $primaryCampaignName) {
+                    return 1;
+                }
 
-    private function getMimeType(string $path): string
-    {
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        return match ($ext) {
-                'mp4' => 'video/mp4',
-                'webm' => 'video/webm',
-                'ogg' => 'video/ogg',
-                'mov' => 'video/quicktime',
-                'jpg', 'jpeg' => 'image/jpeg',
-                'png' => 'image/png',
-                'gif' => 'image/gif',
-                'webp' => 'image/webp',
-                'svg' => 'image/svg+xml',
-                default => 'application/octet-stream',
-            };
+                return strcasecmp($a, $b);
+            })
+            ->map(fn ($grp) => $grp->values());
+
+        return Inertia::render('Stamps/Index', [
+            'stamps' => $stamps,
+            'stampGroups' => $grouped,
+            'primaryCampaign' => $primaryCampaignName,
+            'totalStamps' => $stamps->count(),
+        ]);
     }
 }

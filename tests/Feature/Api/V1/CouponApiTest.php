@@ -20,7 +20,15 @@ it('lists available coupons for authenticated user', function () {
 
     $this->getJson('/api/v1/coupons')
         ->assertSuccessful()
-        ->assertJsonStructure(['data']);
+        ->assertJsonStructure([
+            'data' => [
+                // structure with wildcard so empty arrays are still accepted
+                'plan_coupons' => ['*' => ['status']],
+                'store_coupons' => ['*' => ['status']],
+                'other_coupons' => ['*' => ['status']],
+            ],
+        ]);
+
 });
 
 it('requires auth to list coupons', function () {

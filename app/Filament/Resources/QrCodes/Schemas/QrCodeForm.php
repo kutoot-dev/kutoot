@@ -11,6 +11,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ViewField;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class QrCodeForm
@@ -34,7 +35,11 @@ class QrCodeForm
                     ->relationship('merchantLocation', 'branch_name')
                     ->searchable()
                     ->preload()
-                    ->required(fn (string $operation) => $operation === 'edit'),
+                    ->required(fn (string $operation) => $operation === 'edit')
+                    ->live()
+                    ->afterStateUpdated(fn (Get $get, Set $set) =>
+                        filled($get('merchant_location_id')) && $set('status', QrCodeStatus::Linked->value)
+                    ),
                 Toggle::make('is_primary')
                     ->label('Is Primary QR Code')
                     ->helperText('Designates this QR code as the primary one for the selected location.')
@@ -56,7 +61,8 @@ class QrCodeForm
                     ->schema([
                         ViewField::make('preview')
                             ->view('filament.components.qr-code-preview')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->dehydrated(false),
                     ]),
             ]);
     }

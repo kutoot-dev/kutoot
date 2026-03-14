@@ -420,7 +420,9 @@ describe('Coupons', function () {
         $this->getJson(sellerBaseUrl($location).'/coupons')
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonCount(3, 'data.deals');
+            ->assertJsonCount(3, 'data.deals')
+            // each returned deal should include a status attribute (could be approved by default)
+            ->assertJsonStructure(['data' => ['deals' => [['status']]]]);
     });
 
     it('creates a coupon', function () {

@@ -35,8 +35,10 @@ class CampaignResource extends JsonResource
                 'possible_combinations' => $this->getPossibleCombinations(),
             ]),
             'reward_cost_target' => (float) $this->reward_cost_target,
+            'reward_cost' => $this->reward_cost ? (float) $this->reward_cost : null,
             'stamp_target' => $this->stamp_target,
             'marketing_bounty_percentage' => $this->marketing_bounty_percentage,
+            'key_facts' => $this->key_facts,
             'collected_commission_cache' => (float) $this->collected_commission_cache,
             'issued_stamps_cache' => $this->issued_stamps_cache,
             'winner_announcement_date' => $this->winner_announcement_date?->toISOString(),
@@ -54,6 +56,10 @@ class CampaignResource extends JsonResource
                 'mime_type' => $m->mime_type,
                 'size' => $m->size,
             ])),
+            // include sponsors relationship if loaded
+            'sponsors' => SponsorResource::collection($this->whenLoaded('sponsors')),
+            // include the explicit primary sponsor relation when available
+            'primary_sponsor' => new SponsorResource($this->whenLoaded('primarySponsorRelation')),
             'sponsor_image' => $this->when(
                 $this->getFirstMedia('sponsor_image'),
                 fn () => [

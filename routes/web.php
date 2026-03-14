@@ -3,33 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Serve /storage/* from S3 or local (stream through Laravel - works with private S3 bucket)
-Route::get('/storage/{path}', [\App\Http\Controllers\StorageController::class, 'stream'])
-    ->where('path', '.*')
-    ->name('storage.stream');
-
 Route::get('/debug-error', function () {
     abort(500, 'This is a test error to show the error page.');
-});
-
-// Temporary: debug S3 storage access (remove in production)
-Route::get('/debug-storage', function () {
-    $path = request('path', '72/01KJS9EGD39ZMH2J710N2E4ZNW.mp4');
-    $disk = \Illuminate\Support\Facades\Storage::disk(\App\Services\SettingService::getStorageDisk());
-    $driver = config('filesystems.default');
-    $exists = $disk->exists($path);
-    $error = null;
-    try {
-        $disk->response($path);
-    } catch (\Throwable $e) {
-        $error = $e->getMessage();
-    }
-    return response()->json([
-        'path' => $path,
-        'driver' => $driver,
-        'exists' => $exists,
-        'error' => $error,
-    ]);
 });
 
 Route::get('/', [\App\Http\Controllers\CampaignController::class, 'index'])->name('campaigns.index');

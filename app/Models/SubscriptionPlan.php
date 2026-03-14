@@ -87,6 +87,14 @@ class SubscriptionPlan extends Model
     }
 
     /**
+     * @return HasMany<SubscriptionConsent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(SubscriptionConsent::class, 'plan_id');
+    }
+
+    /**
      * Ensure only one plan is marked as best value at a time.
      */
     protected static function booted(): void

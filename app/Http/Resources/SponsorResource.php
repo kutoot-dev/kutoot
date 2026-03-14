@@ -12,7 +12,7 @@ class SponsorResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type,
@@ -20,5 +20,13 @@ class SponsorResource extends JsonResource
             'banner' => $this->getFirstMediaUrl('banner', 'preview') ?: null,
             'link' => $this->link,
         ];
+
+        // include pivot attributes when loaded via campaigns relation
+        if ($this->pivot) {
+            $data['is_primary'] = (bool) $this->pivot->is_primary;
+            $data['sort_order'] = $this->pivot->sort_order;
+        }
+
+        return $data;
     }
 }

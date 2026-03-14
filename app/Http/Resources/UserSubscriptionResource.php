@@ -15,13 +15,17 @@ class UserSubscriptionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $plan = $this->whenLoaded('plan');
+        $isDefault = $plan instanceof \App\Models\SubscriptionPlan && $plan->is_default;
+
         return [
             'id' => $this->id,
             'status' => $this->status,
-            'expires_at' => $this->expires_at?->toISOString(),
-            'days_remaining' => app(\App\Services\SubscriptionService::class)
+            'expires_at' => $isDefault ? null : $this->expires_at?->toISOString(),
+            'days_remaining' => $isDefault ? null : app(\App\Services\SubscriptionService::class)
                 ->calculateDaysRemaining($this->expires_at),
-            'plan' => new SubscriptionPlanResource($this->whenLoaded('plan')),
+            'is_lifetime' => $isDefault,
+            'plan' => new SubscriptionPlanResource($plan),
             'user' => new UserResource($this->whenLoaded('user')),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

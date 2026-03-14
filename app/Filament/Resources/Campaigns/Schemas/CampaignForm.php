@@ -4,10 +4,12 @@ namespace App\Filament\Resources\Campaigns\Schemas;
 
 use App\Enums\CampaignStatus;
 use App\Enums\CreatorType;
+use App\Models\Sponsor;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -54,6 +56,11 @@ class CampaignForm
                 TextInput::make('reward_cost_target')
                     ->required()
                     ->numeric(),
+                TextInput::make('reward_cost')
+                    ->label('Reward Cost (Display Value)')
+                    ->helperText('The actual cost/value of the reward to display in campaign details/popup')
+                    ->numeric()
+                    ->step(0.01),
                 TextInput::make('stamp_target')
                     ->required()
                     ->numeric(),
@@ -84,6 +91,33 @@ class CampaignForm
                     ->helperText('Select which subscription plans can access this campaign.')
                     ->bulkToggleable()
                     ->columns(2),
+
+                Section::make('Campaign Highlights')
+                    ->description('Add eye-catching key facts/highlights to display in the campaign details popup.')
+                    ->collapsible()
+                    ->components([
+                        Repeater::make('key_facts')
+                            ->label('Key Facts')
+                            ->helperText('Add key-value pairs that will be displayed as campaign highlights in an attractive format.')
+                            ->schema([
+                                TextInput::make('key')
+                                    ->label('Label')
+                                    ->placeholder('e.g., Validity, Benefit, Feature')
+                                    ->required()
+                                    ->columnSpanFull()
+                                    ->maxLength(100),
+                                TextInput::make('value')
+                                    ->label('Value')
+                                    ->placeholder('e.g., 30 Days, ₹500 Cash Back, Free Shipping')
+                                    ->required()
+                                    ->columnSpanFull()
+                                    ->maxLength(255),
+                            ])
+                            ->defaultItems(0)
+                            ->addActionLabel('Add Key Fact')
+                            ->collapsible()
+                            ->columnSpanFull(),
+                    ]),
 
                 Section::make('Media')
                     ->description('Upload images and videos for this campaign.')
@@ -126,6 +160,25 @@ class CampaignForm
                             ->maxSize(config('upload.max_file_size_kb'))
                             ->conversion('sponsor_thumb')
                             ->helperText('Recommended size: 400x224px (16:9 aspect ratio).'),
+                    ]),
+
+                Section::make('Campaign Sponsors')
+                    ->description('Link sponsors to this campaign. One sponsor can be marked as the primary sponsor.')
+                    ->collapsible()
+                    ->components([
+                        Select::make('sponsors')
+                            ->relationship('sponsors', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->helperText('Select sponsors for this campaign from the sponsors list.'),
+
+                        Select::make('primary_sponsor_id')
+                            ->label('Primary Sponsor')
+                            ->options(fn (Get $get) => Sponsor::whereIn('id', $get('sponsors') ?? [])->pluck('name', 'id'))
+                            ->helperText('Select which sponsor is the primary/featured sponsor for this campaign.')
+                            ->reactive()
+                            ->visible(fn (Get $get) => ! empty($get('sponsors'))),
                     ]),
 
                 Section::make('Stamp Code Configuration')

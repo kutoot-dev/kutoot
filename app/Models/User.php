@@ -64,6 +64,8 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
         'city_id',
         'pin_code',
         'full_address',
+        'terms_accepted_at',
+        'terms_version_id',
     ];
 
     /**
@@ -100,6 +102,8 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
             'primary_campaign_id' => 'integer',
             'otp_expires_at' => 'datetime',
             'has_email_authentication' => 'boolean',
+            'terms_accepted_at' => 'datetime',
+            'terms_version_id' => 'integer',
         ];
     }
 
@@ -238,6 +242,14 @@ class User extends Authenticatable implements FilamentUser, HasEmailAuthenticati
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * @return HasMany<SubscriptionConsent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(SubscriptionConsent::class);
     }
 
     public function registerMediaCollections(): void

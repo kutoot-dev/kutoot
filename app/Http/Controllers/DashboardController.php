@@ -56,9 +56,10 @@ class DashboardController extends Controller
                 'max_discounted_bills' => $plan->max_discounted_bills,
                 'max_redeemable_amount' => (float) $plan->max_redeemable_amount,
                 'duration_days' => $plan->duration_days,
+                'is_lifetime' => (bool) $plan->is_default,
                 'purchased_at' => $subscription->created_at?->format('M d, Y'),
-                'expires_at' => $subscription->expires_at?->format('M d, Y'),
-                'days_remaining' => app(\App\Services\SubscriptionService::class)
+                'expires_at' => $plan->is_default ? null : $subscription->expires_at?->format('M d, Y'),
+                'days_remaining' => $plan->is_default ? null : app(\App\Services\SubscriptionService::class)
                     ->calculateDaysRemaining($subscription->expires_at),
             ] : null,
             'primaryCampaign' => $user->primaryCampaign ? [

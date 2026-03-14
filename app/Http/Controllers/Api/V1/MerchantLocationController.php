@@ -26,7 +26,7 @@ class MerchantLocationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $locations = MerchantLocation::query()
-            ->with('merchant')
+            ->with(['merchant', 'primaryQrCode'])
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('branch_name', 'like', "%{$search}%")
@@ -39,5 +39,18 @@ class MerchantLocationController extends Controller
             ->paginate(min((int) $request->input('per_page', 15), 50));
 
         return MerchantLocationResource::collection($locations);
+    }
+
+    /**
+     * Show a single merchant location
+     *
+     * Returns the details of a specific merchant location by ID.
+     * Used by the QR → pay bill flow to fetch store details directly.
+     */
+    public function show(MerchantLocation $merchantLocation): MerchantLocationResource
+    {
+        $merchantLocation->load(['merchant', 'state', 'city', 'tags', 'primaryQrCode']);
+
+        return new MerchantLocationResource($merchantLocation);
     }
 }
