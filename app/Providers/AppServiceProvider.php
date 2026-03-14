@@ -108,11 +108,10 @@ class AppServiceProvider extends ServiceProvider
 
             $maxMb = (int) SettingService::get('max_upload_size_mb', 100);
             if ($maxMb > 0) {
-                $maxKb = $maxMb * 1024;
-                Config::set('upload.max_file_size_kb', $maxKb);
+                Config::set('upload.max_upload_size_mb', $maxMb);
                 Config::set('media-library.max_file_size', $maxMb * 1024 * 1024);
                 // Livewire temporary uploads default to 12MB — sync with our limit so large files pass through
-                Config::set('livewire.temporary_file_upload.rules', ['file', 'max:' . $maxKb]);
+                Config::set('livewire.temporary_file_upload.rules', ['file', 'max:' . ($maxMb * 1024)]);
             }
 
             if ($storageDisk === 's3') {

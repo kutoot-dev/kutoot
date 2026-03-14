@@ -25,13 +25,13 @@ class SponsorForm
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb')),
+                    ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024),
                 SpatieMediaLibraryFileUpload::make('banner')
                     ->collection('banner')
                     ->image()
                     ->conversion('thumb')
                     ->responsiveImages()
-                    ->maxSize(config('upload.max_file_size_kb')),
+                    ->maxSize((int) config('upload.max_upload_size_mb', 100) * 1024),
                 TextInput::make('link')
                     ->url()
                     ->maxLength(2048),
